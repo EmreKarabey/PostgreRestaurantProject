@@ -35,7 +35,7 @@
             <div class="flex items-center gap-3">
                 <h1 class="font-display text-3xl font-bold tracking-tight text-ink">Kullanıcı Yönetimi</h1>
                 <span class="text-xs font-sans font-semibold px-2.5 py-1 rounded-full bg-brand-100 text-brand-700">
-                    @totalUsers Kullanıcı
+                    <span id="totalUsersBadge">@totalUsers</span> Kullanıcı
                 </span>
             </div>
             <p class="text-sm text-ink-soft mt-1">
@@ -76,7 +76,7 @@
                 </span>
             </div>
             <div class="mt-3 flex items-baseline gap-2">
-                <span class="font-display text-3xl font-bold text-ink">@totalUsers</span>
+                <span id="totalUsersStat" class="font-display text-3xl font-bold text-ink">@totalUsers</span>
                 <span class="text-xs text-ink-soft">kişi</span>
             </div>
             <div class="mt-2 text-xs text-ink-soft flex items-center gap-1.5">
@@ -97,7 +97,7 @@
                 </span>
             </div>
             <div class="mt-3 flex items-baseline gap-2">
-                <span class="font-display text-3xl font-bold text-ok">@activeUsersCount</span>
+                <span id="activeUsersStat" class="font-display text-3xl font-bold text-ok">@activeUsersCount</span>
                 <span class="text-xs text-ok/80 font-medium">aktif</span>
             </div>
             <div class="mt-2 text-xs text-ink-soft flex items-center gap-1.5">
@@ -118,7 +118,7 @@
                 </span>
             </div>
             <div class="mt-3 flex items-baseline gap-2">
-                <span class="font-display text-3xl font-bold text-ink">@confirmedEmailCount</span>
+                <span id="confirmedEmailStat" class="font-display text-3xl font-bold text-ink">@confirmedEmailCount</span>
                 <span class="text-xs text-ink-soft">hesap</span>
             </div>
             <div class="mt-2 text-xs text-ink-soft flex items-center gap-1.5">
@@ -138,7 +138,7 @@
                 </span>
             </div>
             <div class="mt-3 flex items-baseline gap-2">
-                <span class="font-display text-3xl font-bold text-ink">@twoFactorCount</span>
+                <span id="twoFactorStat" class="font-display text-3xl font-bold text-ink">@twoFactorCount</span>
                 <span class="text-xs text-ink-soft">etkin</span>
             </div>
             <div class="mt-2 text-xs text-ink-soft flex items-center gap-1.5">
@@ -569,7 +569,28 @@
 </div>
 
 <!-- ============ ALPINESCRIPT & JAVASCRIPT ============ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 <script>
+    const userStatsConnection = new signalR.HubConnectionBuilder()
+        .withUrl('/signalrhub')
+        .withAutomaticReconnect()
+        .build();
+
+    function updateUserStatistics(stats) {
+        document.getElementById('totalUsersStat').textContent = stats.totalUsers;
+        document.getElementById('totalUsersBadge').textContent = stats.totalUsers;
+        document.getElementById('activeUsersStat').textContent = stats.totalUsers - stats.lockedUsersCount;
+        document.getElementById('confirmedEmailStat').textContent = stats.confirmedEmailCount;
+        document.getElementById('twoFactorStat').textContent = stats.twoFactorCount;
+    }
+
+    userStatsConnection.on('UserStatistics', updateUserStatistics);
+    userStatsConnection.start()
+        .then(() => userStatsConnection.invoke('SendUserStatistics'))
+        .catch(error => console.error('Kullanıcı istatistikleri bağlantı hatası:', error));
+
+    userStatsConnection.onreconnected(() => userStatsConnection.invoke('SendUserStatistics'));
+
     function userManagementApp() {
         return {
             searchQuery: '',
@@ -643,6 +664,7 @@
                 }
 
                 showNotification(result.message || 'Kullanıcı başarıyla silindi.', 'success');
+                userStatsConnection.invoke('SendUserStatistics');
             } else {
                 if (row) {
                     row.style.opacity = '1';

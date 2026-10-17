@@ -4,6 +4,9 @@ using System.Linq;
 using BusinessLayer.Abstract;
 using CofeeAdmin.Dto.Category;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using EntityLayer.Entities;
 
 namespace CofeeAdmin.SignalR
 {
@@ -14,13 +17,30 @@ namespace CofeeAdmin.SignalR
         private readonly IProductService _productService;
         private readonly ICategoryService _categoryService;
         private readonly IReviewsService _reviewsService;
+        private readonly UserManager<AppUser> _userManager;
 
-        public SignalRHub(IReservationService reservationService, IProductService productService, ICategoryService categoryService, IReviewsService reviewsService)
+        public SignalRHub(IReservationService reservationService, IProductService productService, ICategoryService categoryService, IReviewsService reviewsService, UserManager<AppUser> userManager)
         {
             _reservationService = reservationService;
             _productService = productService;
             _categoryService = categoryService;
             _reviewsService = reviewsService;
+            _userManager = userManager;
+        }
+
+        public async Task SendUserStatistics()
+        {
+            var users = _userManager.Users;
+            var now = DateTimeOffset.UtcNow;
+            var statistics = new
+            {
+                totalUsers = await users.CountAsync(),
+                confirmedEmailCount = await users.CountAsync(user => user.EmailConfirmed),
+                twoFactorCount = await users.CountAsync(user => user.TwoFactorEnabled),
+                lockedUsersCount = await users.CountAsync(user => user.LockoutEnd != null && user.LockoutEnd > now)
+            };
+
+            await Clients.All.SendAsync("UserStatistics", statistics);
         }
 
         public async Task SendReviewStatistics()

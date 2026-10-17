@@ -257,10 +257,10 @@ namespace CofeeAdmin.Controllers
             if (result.Succeeded)
             {
                 var successMsg = $"\"{user.UserName}\" adlı kullanıcı başarıyla silindi.";
-                TempData["SuccessMessage"] = successMsg;
 
                 if (isAjax)
                     return Json(new { success = true, message = successMsg });
+
             }
             else
             {
