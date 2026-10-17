@@ -1,0 +1,63 @@
+@model EntityLayer.Entities.AppUser
+
+@{
+    var firstName = Model?.FirstName?.Trim() ?? string.Empty;
+    var lastName = Model?.LastName?.Trim() ?? string.Empty;
+    var fullName = $"{firstName} {lastName}".Trim();
+    if (string.IsNullOrWhiteSpace(fullName))
+    {
+        fullName = Model?.UserName ?? "Hesabım";
+    }
+
+    var initials = string.Concat(
+        firstName.Length > 0 ? firstName[..1] : string.Empty,
+        lastName.Length > 0 ? lastName[..1] : string.Empty);
+    if (string.IsNullOrWhiteSpace(initials))
+    {
+        initials = !string.IsNullOrWhiteSpace(Model?.UserName) ? Model.UserName[..1] : "?";
+    }
+
+    var profileImageUrl = !string.IsNullOrWhiteSpace(Model?.ProfileImageURL)
+        ? $"/Image/Get?url={Uri.EscapeDataString(Model.ProfileImageURL)}&thumbnail=true"
+        : null;
+}
+
+<header class="sticky top-0 z-20 bg-paper/90 backdrop-blur border-b border-line">
+    <div class="flex items-center gap-4 px-4 sm:px-8 h-16">
+        <!-- Mobil Menü Açma Butonu -->
+        <button class="lg:hidden p-2 -ml-2 rounded-lg hover:bg-brand-50" @@click="menuOpen=true" aria-label="Menüyü aç">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" />
+            </svg>
+        </button>
+
+        <!-- Sayfa Başlığı (Razor ViewData["Title"] üzerinden) -->
+        <h1 class="font-display text-xl font-semibold text-ink">@(ViewData["Title"] ?? "Dina Yönetim")</h1>
+
+        <!-- Sağ Taraf: Tarih ve Kullanıcı Profili -->
+        <div class="ml-auto flex items-center gap-3">
+            <span class="hidden sm:block text-xs font-medium text-ink-soft">
+                @DateTime.Now.ToString("dd MMMM yyyy, dddd", new System.Globalization.CultureInfo("tr-TR"))
+            </span>
+
+            <div class="relative" @@click.outside="userMenu=false">
+                <button @@click="userMenu=!userMenu" class="flex items-center gap-2 rounded-full pl-1 pr-3 py-1 hover:bg-brand-50 transition-colors" aria-haspopup="true">
+                    @if (profileImageUrl != null)
+                    {
+                        <img src="@profileImageUrl" alt="@fullName" class="w-8 h-8 rounded-full object-cover shadow-xs" />
+                    }
+                    else
+                    {
+                        <span class="w-8 h-8 rounded-full bg-brand-500 text-white grid place-items-center text-sm font-semibold shadow-xs">@initials</span>
+                    }
+                    <span class="max-w-28 truncate text-xs sm:text-sm font-medium text-ink">@fullName</span>
+                </button>
+                <div x-cloak x-show="userMenu" x-transition class="absolute right-0 mt-2 w-48 bg-card border border-line rounded-lg shadow-lg py-1 text-sm">
+                    <a href="/Profile/Index" class="block px-4 py-2 hover:bg-brand-50 text-ink">Profilim</a>
+                    <hr class="my-1 border-line">
+                    <a href="/Login/Logout" class="block px-4 py-2 text-bad hover:bg-brand-50">Çıkış Yap</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

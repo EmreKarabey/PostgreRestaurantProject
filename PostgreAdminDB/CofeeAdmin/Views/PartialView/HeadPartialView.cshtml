@@ -1,0 +1,117 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dina Yönetim Paneli</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@@tailwindcss/browser@4"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="~/css/admin-responsive.css" asp-append-version="true" />
+    <script defer src="~/js/admin-mobile-tables.js" asp-append-version="true"></script>
+
+    <!-- ============ TASARIM TOKEN'LARI ============
+         Dina temasının renklerine uymak için SADECE bu bloğu değiştirmen yeterli. -->
+    <style type="text/tailwindcss">
+        @@theme {
+            --font-display: "Fraunces", Georgia, serif;
+            --font-sans: "DM Sans", system-ui, sans-serif;
+            --color-brand-50: #fbf4e4;
+            --color-brand-100: #f4e3b8;
+            --color-brand-500: #c28a2c; /* ana vurgu (safran/amber) */
+            --color-brand-600: #a67219;
+            --color-brand-700: #835813;
+            --color-ink: #2a1e17; /* koyu espresso: menü, başlıklar */
+            --color-ink-soft: #6b5b4e;
+            --color-paper: #faf6ee; /* sayfa zemini */
+            --color-card: #fffdf9;
+            --color-line: #e9dfcf;
+            --color-ok: #4f6b3a;
+            --color-warn: #b8631f;
+            --color-bad: #9a3232;
+        }
+
+        [x-cloak] {
+            display: none !important
+        }
+
+        @@layer base {
+            body {
+                font-family: var(--font-sans);
+                background: var(--color-paper);
+                color: var(--color-ink)
+            }
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .55rem 1rem;
+            border-radius: .5rem;
+            font-weight: 600;
+            font-size: .875rem;
+            transition: background .15s
+        }
+
+        .btn-primary {
+            background: var(--color-brand-500);
+            color: #fff
+        }
+
+            .btn-primary:hover {
+                background: var(--color-brand-600)
+            }
+
+        .btn-ghost {
+            border: 1px solid var(--color-line);
+            background: var(--color-card)
+        }
+
+            .btn-ghost:hover {
+                background: var(--color-brand-50)
+            }
+
+        .input {
+            width: 100%;
+            padding: .55rem .75rem;
+            border: 1px solid var(--color-line);
+            border-radius: .5rem;
+            background: #fff;
+            font-size: .875rem
+        }
+
+            .input:focus {
+                outline: 2px solid var(--color-brand-500);
+                outline-offset: 0;
+                border-color: transparent
+            }
+
+        :focus-visible {
+            outline: 2px solid var(--color-brand-500);
+            outline-offset: 2px
+        }
+
+        /* Scrollbar Gizleme (Kaydırma çalışır, çubuk görünmez) */
+        .no-scrollbar::-webkit-scrollbar,
+        aside::-webkit-scrollbar,
+        aside nav::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
+
+        .no-scrollbar,
+        aside,
+        aside nav {
+            -ms-overflow-style: none !important;
+            scrollbar-width: none !important;
+        }
+
+        @@media (prefers-reduced-motion:reduce) {
+            * {
+                transition: none !important
+            }
+        }
+    </style>
+</head>

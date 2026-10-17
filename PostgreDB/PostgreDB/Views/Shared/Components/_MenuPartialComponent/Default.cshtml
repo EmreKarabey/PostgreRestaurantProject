@@ -1,0 +1,28 @@
+﻿@model List<GetActiveWithProductsListDto>
+
+<ul class="our-menu">
+	@foreach (var item in Model)
+	{
+		<li>
+			<h4 class="menu-title-section"><a href="#starters">@item.CategoryName</a></h4>
+			<div id="starters" class="menu-section">
+				<div class="menu-holder menu-2col menu-accordion home-menu-products">
+					@foreach (var item2 in item.ProductListWithCategories)
+					{
+						<div class="menu-post clearfix ">
+							<div class="menu-post-img"><a href="/Image/Get?url=@Uri.EscapeDataString(item2.ImageURL)" class="lightbox" title="@item2.ProductName"><img width="400" height="400" src="/Image/Get?url=@Uri.EscapeDataString(item2.ImageURL)&amp;thumbnail=true" alt="@item2.ProductName" loading="lazy" decoding="async" /> </a> </div>
+							<div class="menu-post-desc">
+								<h4><span class="menu-title">@item2.ProductName</span> <span class="menu-dots"></span><span class="menu-price">₺@item2.Price</span></h4>
+								<div class="menu-text">@item2.Descrption</div>
+							</div>
+						</div>
+					}
+					
+					
+				</div>
+			</div>
+		</li>
+	}
+
+
+</ul>

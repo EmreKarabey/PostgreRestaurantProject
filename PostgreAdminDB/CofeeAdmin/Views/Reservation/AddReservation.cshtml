@@ -1,0 +1,281 @@
+@using CofeeAdmin.Dto.Reservation
+@model AddReservationDto
+
+@{
+    ViewData["Title"] = "Yeni Rezervasyon Ekle";
+    Layout = "_Layout";
+}
+
+<div class="space-y-8">
+
+    <!-- ============ ÜST BAŞLIK VE GERİ DÖNÜŞ ALANI ============ -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-line/70">
+        <div>
+            <div class="flex items-center gap-3">
+                <a href="/Reservation/Index" 
+                   class="p-2 rounded-lg border border-line bg-card hover:bg-brand-50 text-ink-soft hover:text-ink transition-colors"
+                   title="Rezervasyon Listesine Dön">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <h1 class="font-display text-3xl font-bold tracking-tight text-ink">Yeni Rezervasyon Ekle</h1>
+            </div>
+            <p class="text-sm text-ink-soft mt-1 sm:ml-11">
+                Restoran misafirleri için yeni bir masa rezervasyonu kaydı oluşturun.
+            </p>
+        </div>
+
+        <!-- Sağ Aksiyon: Listeye Geri Dön -->
+        <div class="shrink-0">
+            <a href="/Reservation/Index" class="btn btn-ghost text-xs">
+                <svg class="w-4 h-4 text-ink-soft" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Rezervasyon Listesine Dön</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ============ FORM VE CANLI ÖNİZLEME ALANI ============ -->
+    <div x-data="{ 
+            firstName: '@(Model?.FirstName ?? "")', 
+            lastName: '@(Model?.LastName ?? "")',
+            email: '@(Model?.Email ?? "")',
+            phoneNumber: '@(Model?.PhoneNumber ?? "")',
+            reservationDate: '@(Model != null && Model.ReservationDate != default ? Model.ReservationDate.ToString("yyyy-MM-ddTHH:mm") : DateTime.Now.AddDays(1).ToString("yyyy-MM-ddT19:00"))',
+            numberOfPeople: @(Model?.NumberOfPeople > 0 ? Model.NumberOfPeople : 2),
+            tableNumber: '@(Model?.TableNumber?.ToString() ?? "")'
+         }" 
+         class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+        <!-- ============ SOL ALAN: FORM GİRDİLERİ (8 Kolon) ============ -->
+        <div class="lg:col-span-7 xl:col-span-8 bg-card border border-line rounded-2xl p-6 sm:p-8 shadow-xs">
+            <div class="flex items-center gap-3 pb-5 mb-6 border-b border-line/60">
+                <div class="w-9 h-9 rounded-xl bg-brand-50 text-brand-700 grid place-items-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="font-display text-lg font-bold text-ink">Rezervasyon Bilgileri</h2>
+                    <p class="text-xs text-ink-soft">Lütfen misafir ve rezervasyon detaylarını eksiksiz giriniz.</p>
+                </div>
+            </div>
+
+            <!-- Genel Hata Bildirim Kutusu -->
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="mb-6 rounded-xl border border-bad/30 bg-bad/5 p-4 text-sm text-bad flex items-start gap-3">
+                    <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <div>
+                        <h4 class="font-semibold text-bad mb-1">Kayıt sırasında bir hata oluştu:</h4>
+                        <div asp-validation-summary="All" class="text-xs space-y-0.5"></div>
+                    </div>
+                </div>
+            }
+
+            <form method="post" action="/Reservation/AddReservation" class="space-y-6">
+
+                <!-- 1. Misafir Adı ve Soyadı -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="FirstName" class="block text-xs font-semibold uppercase tracking-wider text-ink mb-1.5">
+                            Müşteri Adı <span class="text-bad">*</span>
+                        </label>
+                        <input type="text" 
+                               id="FirstName" 
+                               name="FirstName" 
+                               x-model="firstName"
+                               required
+                               placeholder="Örn: Ahmet"
+                               class="w-full rounded-xl border border-line bg-card px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/40 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all shadow-2xs" />
+                        <span asp-validation-for="FirstName" class="text-xs text-bad mt-1 block"></span>
+                    </div>
+
+                    <div>
+                        <label for="LastName" class="block text-xs font-semibold uppercase tracking-wider text-ink mb-1.5">
+                            Müşteri Soyadı <span class="text-bad">*</span>
+                        </label>
+                        <input type="text" 
+                               id="LastName" 
+                               name="LastName" 
+                               x-model="lastName"
+                               required
+                               placeholder="Örn: Yılmaz"
+                               class="w-full rounded-xl border border-line bg-card px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/40 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all shadow-2xs" />
+                        <span asp-validation-for="LastName" class="text-xs text-bad mt-1 block"></span>
+                    </div>
+                </div>
+
+                <!-- 2. İletişim Bilgileri (E-posta ve Telefon) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="Email" class="block text-xs font-semibold uppercase tracking-wider text-ink mb-1.5">
+                            E-posta Adresi <span class="text-bad">*</span>
+                        </label>
+                        <input type="email" 
+                               id="Email" 
+                               name="Email" 
+                               x-model="email"
+                               required
+                               placeholder="Örn: ahmet@example.com"
+                               class="w-full rounded-xl border border-line bg-card px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/40 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all shadow-2xs" />
+                        <span asp-validation-for="Email" class="text-xs text-bad mt-1 block"></span>
+                    </div>
+
+                    <div>
+                        <label for="PhoneNumber" class="block text-xs font-semibold uppercase tracking-wider text-ink mb-1.5">
+                            Telefon Numarası <span class="text-bad">*</span>
+                        </label>
+                        <input type="tel" 
+                               id="PhoneNumber" 
+                               name="PhoneNumber" 
+                               x-model="phoneNumber"
+                               required
+                               placeholder="Örn: +90 555 123 45 67"
+                               class="w-full rounded-xl border border-line bg-card px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/40 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all shadow-2xs" />
+                        <span asp-validation-for="PhoneNumber" class="text-xs text-bad mt-1 block"></span>
+                    </div>
+                </div>
+
+                <!-- 3. Tarih/Saat & Kişi Sayısı -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="ReservationDate" class="block text-xs font-semibold uppercase tracking-wider text-ink mb-1.5">
+                            Rezervasyon Tarihi ve Saati <span class="text-bad">*</span>
+                        </label>
+                        <input type="datetime-local" 
+                               id="ReservationDate" 
+                               name="ReservationDate" 
+                               x-model="reservationDate"
+                               required
+                               class="w-full rounded-xl border border-line bg-card px-3.5 py-2.5 text-sm text-ink focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all shadow-2xs" />
+                        <span asp-validation-for="ReservationDate" class="text-xs text-bad mt-1 block"></span>
+                    </div>
+
+                    <div>
+                        <label for="NumberOfPeople" class="block text-xs font-semibold uppercase tracking-wider text-ink mb-1.5">
+                            Kişi Sayısı <span class="text-bad">*</span>
+                        </label>
+                        <input type="number" 
+                               id="NumberOfPeople" 
+                               name="NumberOfPeople" 
+                               x-model="numberOfPeople"
+                               min="1" 
+                               max="50"
+                               required
+                               class="w-full rounded-xl border border-line bg-card px-3.5 py-2.5 text-sm text-ink focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all shadow-2xs" />
+                        <span asp-validation-for="NumberOfPeople" class="text-xs text-bad mt-1 block"></span>
+                    </div>
+                </div>
+
+                <!-- 4. Masa Numarası -->
+                <div>
+                    <label for="TableNumber" class="block text-xs font-semibold uppercase tracking-wider text-ink mb-1.5">
+                        Masa Numarası (Opsiyonel)
+                    </label>
+                    <input type="number" 
+                           id="TableNumber" 
+                           name="TableNumber" 
+                           x-model="tableNumber"
+                           min="1" 
+                           max="100"
+                           placeholder="Örn: 5"
+                           class="w-full sm:w-1/2 rounded-xl border border-line bg-card px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/40 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all shadow-2xs" />
+                    <p class="text-[11px] text-ink-soft/70 mt-1">Belirtilmezse rezervasyon sırasında otomatik atanabilir.</p>
+                    <span asp-validation-for="TableNumber" class="text-xs text-bad mt-1 block"></span>
+                </div>
+
+                <!-- Bilgi Notu: Soft Delete Prensibi -->
+                <div class="rounded-xl border border-line bg-brand-50/50 p-4 text-xs text-ink-soft flex items-start gap-2.5">
+                    <svg class="w-4 h-4 text-brand-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    <div>
+                        <strong class="text-ink">Soft Delete Sistemi:</strong> Rezervasyonlar oluşturulduğunda varsayılan olarak <em>Aktif</em> durumdadır. İptal veya arşiv işlemleri için liste ekranında tek tıkla <strong>Soft Delete</strong> uygulanabilir ve istendiğinde geri yüklenebilir.
+                    </div>
+                </div>
+
+                <!-- Butonlar -->
+                <div class="pt-4 border-t border-line/60 flex items-center justify-end gap-3">
+                    <a href="/Reservation/Index" class="btn btn-ghost text-xs">
+                        Vazgeç
+                    </a>
+                    <button type="submit" class="btn btn-primary text-xs shadow-xs">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                            <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>Rezervasyonu Kaydet</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ============ SAĞ ALAN: CANLI KART ÖNİZLEMESİ (4 Kolon) ============ -->
+        <div class="lg:col-span-5 xl:col-span-4 space-y-4 lg:sticky lg:top-8">
+            <div class="text-xs font-semibold uppercase tracking-wider text-ink-soft px-1">
+                Canlı Önizleme
+            </div>
+
+            <!-- Canlı Rezervasyon Kartı -->
+            <div class="bg-card border border-line rounded-2xl p-6 shadow-sm space-y-5">
+                <div class="flex items-center justify-between pb-4 border-b border-line">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-brand-500 text-white flex items-center justify-center font-display font-bold text-lg shadow-xs">
+                            <span x-text="(firstName ? firstName.charAt(0).toUpperCase() : 'A') + (lastName ? lastName.charAt(0).toUpperCase() : 'Y')">AY</span>
+                        </div>
+                        <div>
+                            <h3 class="font-display font-bold text-ink text-lg leading-tight" x-text="(firstName || 'Misafir') + ' ' + (lastName || 'Soyadı')">Ahmet Yılmaz</h3>
+                            <span class="text-xs text-brand-700 font-medium">Yeni Rezervasyon</span>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-ok/15 text-ok">
+                        <span class="w-1.5 h-1.5 rounded-full bg-ok animate-pulse"></span>
+                        <span>Aktif</span>
+                    </span>
+                </div>
+
+                <!-- Detaylar -->
+                <div class="space-y-3 text-xs">
+                    <div class="flex items-center justify-between py-1.5 border-b border-line/50">
+                        <span class="text-ink-soft">Tarih &amp; Saat:</span>
+                        <span class="font-medium text-ink" x-text="reservationDate ? new Date(reservationDate).toLocaleString('tr-TR', { dateStyle: 'medium', timeStyle: 'short' }) : 'Seçilmedi'">
+                            -
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between py-1.5 border-b border-line/50">
+                        <span class="text-ink-soft">Kişi Sayısı:</span>
+                        <span class="font-semibold text-brand-700" x-text="numberOfPeople + ' Kişi'">2 Kişi</span>
+                    </div>
+
+                    <div class="flex items-center justify-between py-1.5 border-b border-line/50">
+                        <span class="text-ink-soft">Masa Numarası:</span>
+                        <span class="font-medium text-ink" x-text="tableNumber ? 'Masa #' + tableNumber : 'Atanmadı'">Atanmadı</span>
+                    </div>
+
+                    <div class="flex items-center justify-between py-1.5 border-b border-line/50">
+                        <span class="text-ink-soft">E-posta:</span>
+                        <span class="font-medium text-ink truncate max-w-[170px]" x-text="email || '-'">-</span>
+                    </div>
+
+                    <div class="flex items-center justify-between py-1.5">
+                        <span class="text-ink-soft">Telefon:</span>
+                        <span class="font-mono text-ink" x-text="phoneNumber || '-'">-</span>
+                    </div>
+                </div>
+
+                <div class="pt-2 text-[11px] text-ink-soft/70 text-center bg-brand-50/50 rounded-xl py-2">
+                    Kayıt tamamlandığında sistemde aktif olarak listelenecektir.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

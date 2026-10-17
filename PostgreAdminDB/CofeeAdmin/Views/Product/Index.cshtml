@@ -1,0 +1,626 @@
+@using EntityLayer.Entities
+@using X.PagedList
+@model IPagedList<Product>
+
+@{
+    ViewData["Title"] = "Ürünler";
+    Layout = "_Layout";
+
+}
+
+<div class="space-y-8">
+
+    <!-- ============ SAYFA ÜST BAŞLIĞI VE AKSİYONLAR ============ -->
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-2 border-b border-line/70">
+        <div>
+            <div class="flex items-center gap-3">
+                <h1 class="font-display text-3xl font-bold tracking-tight text-ink">Ürün Listesi</h1>
+                <span class="text-xs font-sans font-semibold px-2.5 py-1 rounded-full bg-brand-100 text-brand-700">
+                    <span id="product-total-badge">—</span> Ürün
+                </span>
+            </div>
+            <p class="text-sm text-ink-soft mt-1">
+                Menünüzdeki tüm kahve ve yiyecek ürünlerini buradan listeleyebilir, düzenleyebilir ve durumlarını yönetebilirsiniz.
+            </p>
+        </div>
+
+        <!-- Aksiyon Butonları -->
+        <div class="flex items-center gap-3 shrink-0">
+            <a href="/Product/Index" class="btn btn-ghost text-xs" title="Sayfayı Yenile">
+                <svg class="w-4 h-4 text-ink-soft" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span>Yenile</span>
+            </a>
+            <a href="/Product/AddProduct" class="btn btn-primary text-xs shadow-xs">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span>Yeni Ürün Ekle</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ============ İSTATİSTİK ÖZET KARTLARI ============ -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <!-- Toplam Ürün -->
+        <div class="bg-card border border-line rounded-xl p-5 shadow-xs">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-ink-soft">Toplam Ürün</span>
+                <span class="w-8 h-8 rounded-lg bg-brand-50 text-brand-700 grid place-items-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/>
+                    </svg>
+                </span>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2">
+                <span class="font-display text-3xl font-bold text-ink" id="stat-total-count">—</span>
+                <span class="text-xs text-ink-soft">çeşit</span>
+            </div>
+            <div class="mt-2 text-xs text-ink-soft flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+                <span>Menüde kayıtlı</span>
+            </div>
+        </div>
+
+        <!-- Aktif Ürünler -->
+        <div class="bg-card border border-line rounded-xl p-5 shadow-xs">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-ink-soft">Menüde Aktif</span>
+                <span class="w-8 h-8 rounded-lg bg-ok/15 text-ok grid place-items-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-linecap="round"/>
+                        <path d="M22 4L12 14.01l-3-3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2">
+                <span class="font-display text-3xl font-bold text-ok" id="stat-active-count">—</span>
+                <span class="text-xs text-ok/80 font-medium">yayında</span>
+            </div>
+            <div class="mt-2 text-xs text-ink-soft flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-ok"></span>
+                <span>Siparişe açık</span>
+            </div>
+        </div>
+
+        <!-- Pasif Ürünler -->
+        <div class="bg-card border border-line rounded-xl p-5 shadow-xs">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-ink-soft">Pasif / Taslak</span>
+                <span class="w-8 h-8 rounded-lg bg-warn/15 text-warn grid place-items-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                </span>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2">
+                <span class="font-display text-3xl font-bold text-warn" id="stat-passive-count">—</span>
+                <span class="text-xs text-warn/80 font-medium">gizli</span>
+            </div>
+            <div class="mt-2 text-xs text-ink-soft flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-warn"></span>
+                <span>Menüde gösterilmez</span>
+            </div>
+        </div>
+
+        <!-- Ortalama Fiyat -->
+        <div class="bg-card border border-line rounded-xl p-5 shadow-xs">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-ink-soft">Ortalama Fiyat</span>
+                <span class="w-8 h-8 rounded-lg bg-ink text-brand-100 grid place-items-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                </span>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2">
+                <span class="font-display text-3xl font-bold text-ink" id="stat-average-price">—</span>
+                <span class="text-xs text-ink-soft">TL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ ÜRÜN VERİ TABLOSU ============ -->
+    <div class="bg-card border border-line rounded-xl shadow-xs">
+        <div class="overflow-x-auto min-h-[220px] lg:overflow-visible">
+            <table class="w-full text-left text-sm">
+                <!-- Tablo Başlıkları -->
+                <thead class="text-xs font-semibold text-ink-soft bg-brand-50/70 border-b border-line uppercase tracking-wider">
+                    <tr>
+                        <th class="px-6 py-3.5 w-20">ID</th>
+                        <th class="px-6 py-3.5">Görsel & Ürün Adı</th>
+                        <th class="px-6 py-3.5 text-center">Kategori</th>
+                        <th class="px-6 py-3.5 text-center">Fiyat</th>
+                        <th class="px-6 py-3.5 text-center">Durum</th>
+                        <th class="px-6 py-3.5 text-right w-24">İşlemler</th>
+                    </tr>
+                </thead>
+
+                <!-- Tablo Satırları -->
+                <tbody class="divide-y divide-line">
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr id="product-row-@item.EntityID" class="hover:bg-brand-50/40 transition-all duration-300">
+                                <!-- EntityID -->
+                                <td class="px-6 py-4 font-mono text-xs text-ink-soft">
+                                    #@item.EntityID
+                                </td>
+
+                                <!-- ImageURL & ProductName -->
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3.5">
+                                        @if (!string.IsNullOrWhiteSpace(item.ImageURL))
+                                        {
+                                            <img src="/Image/Get?url=@Uri.EscapeDataString(item.ImageURL)&amp;thumbnail=true" 
+                                                 alt="@item.ProductName" 
+                                                 class="w-11 h-11 rounded-lg object-cover border border-line shrink-0"
+                                                 onerror="this.src='https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=300&auto=format&fit=crop&q=80'" />
+                                        }
+                                        else
+                                        {
+                                            <div class="w-11 h-11 rounded-lg bg-brand-50 border border-line flex items-center justify-center text-brand-700 shrink-0">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                                    <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/>
+                                                </svg>
+                                            </div>
+                                        }
+                                        <div>
+                                            <span class="font-display font-semibold text-ink text-base block">@item.ProductName</span>
+                                            <span class="text-xs text-ink-soft font-sans">
+                                                @if (!string.IsNullOrWhiteSpace(item.Descrption))
+                                                {
+                                                    @(item.Descrption.Length > 35 ? item.Descrption.Substring(0, 35) + "..." : item.Descrption)
+                                                }
+                                                else
+                                                {
+                                                    <span>Ürün Kodu: #PRD-@item.EntityID</span>
+                                                }
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Category -->
+                                <td class="px-6 py-4 text-center">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-100">
+                                        <svg class="w-3 h-3 text-brand-600 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                            <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z"/>
+                                        </svg>
+                                        @(item.Category?.CategoryName ?? "Kategorisiz")
+                                    </span>
+                                </td>
+
+                                <!-- Price -->
+                                <td class="px-6 py-4 text-center">
+                                    <span class="font-mono font-bold text-ink text-sm">
+                                        ₺@item.Price.ToString("N2", new System.Globalization.CultureInfo("tr-TR"))
+                                    </span>
+                                </td>
+
+                                <!-- Status -->
+                                <td class="px-6 py-4 text-center" id="product-status-cell-@item.EntityID">
+                                    <span id="status-badge-@item.EntityID" 
+                                          data-status="@(item.Status ? "true" : "false")" 
+                                          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold @(item.Status ? "bg-ok/15 text-ok" : "bg-warn/15 text-warn") transition-all duration-300">
+                                        <span class="w-1.5 h-1.5 rounded-full @(item.Status ? "bg-ok" : "bg-warn")"></span>
+                                        <span>@(item.Status ? "Aktif" : "Pasif")</span>
+                                    </span>
+                                </td>
+
+                                <!-- İşlemler (Üç Nokta Menüsü) -->
+                                <td class="px-6 py-4 text-right">
+                                    <div class="relative inline-block text-left" x-data="{ open: false, dropUp: false }" @@click.outside="open = false">
+                                        <button type="button" 
+                                                @@click="
+                                                    const rect = $el.getBoundingClientRect();
+                                                    dropUp = (window.innerHeight - rect.bottom) < 180;
+                                                    open = !open;
+                                                "
+                                                :class="open ? 'bg-brand-100 text-brand-700 border-brand-300 ring-2 ring-brand-200' : 'text-ink-soft hover:text-ink bg-card hover:bg-brand-50 border-line'"
+                                                class="w-8 h-8 rounded-lg border transition-all cursor-pointer shadow-xs focus:outline-none inline-flex items-center justify-center"
+                                                title="İşlemler"
+                                                aria-label="Ürün İşlemleri">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                <circle cx="12" cy="5" r="1.8"/>
+                                                <circle cx="12" cy="12" r="1.8"/>
+                                                <circle cx="12" cy="19" r="1.8"/>
+                                            </svg>
+                                        </button>
+
+                                        <div x-cloak 
+                                             x-show="open" 
+                                             x-transition:enter="transition ease-out duration-100"
+                                             x-transition:enter-start="transform opacity-0 scale-95"
+                                             x-transition:enter-end="transform opacity-100 scale-100"
+                                             x-transition:leave="transition ease-in duration-75"
+                                             x-transition:leave-start="transform opacity-100 scale-100"
+                                             x-transition:leave-end="transform opacity-0 scale-95"
+                                             :class="dropUp ? 'bottom-full mb-1.5 origin-bottom-right' : 'top-full mt-1.5 origin-top-right'"
+                                             class="absolute right-0 w-44 bg-card border border-line rounded-xl shadow-xl py-1 z-30 divide-y divide-line/60">
+                                            
+                                            <!-- Düzenle -->
+                                            <div class="p-1">
+                                                <a href="/Product/UpdateProduct/@item.EntityID" 
+                                                   class="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-ink-soft hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors group">
+                                                    <svg class="w-4 h-4 text-ink-soft group-hover:text-brand-600 transition-colors" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                                        <path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                    </svg>
+                                                    <span>Düzenle</span>
+                                                </a>
+                                            </div>
+
+                                            <!-- Durumu Değiştir -->
+                                            <div class="p-1">
+                                                <button type="button" 
+                                                        @@click="open = false; changeProductStatus(@item.EntityID, '@item.ProductName.Replace("'", "\\'")')" 
+                                                        class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-ink-soft hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors group text-left cursor-pointer">
+                                                    <svg class="w-4 h-4 text-ink-soft group-hover:text-brand-600 transition-colors" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                                        <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round"/>
+                                                    </svg>
+                                                    <span>Durumu Değiştir</span>
+                                                </button>
+                                            </div>
+
+                                            <!-- Sil -->
+                                            <div class="p-1">
+                                                <button type="button" 
+                                                        @@click="open = false; deleteProduct(@item.EntityID, '@item.ProductName.Replace("'", "\\'")')" 
+                                                        class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-bad hover:bg-bad/10 rounded-lg transition-colors group text-left cursor-pointer">
+                                                    <svg class="w-4 h-4 text-bad group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                                        <path d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16"/>
+                                                    </svg>
+                                                    <span>Sil</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <!-- Boş Durum (Veritabanında Ürün Yoksa) -->
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center">
+                                <div class="max-w-sm mx-auto">
+                                    <div class="w-12 h-12 rounded-full bg-brand-50 text-brand-600 grid place-items-center mx-auto mb-3">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                            <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/>
+                                        </svg>
+                                    </div>
+                                    <h3 class="font-display text-lg font-bold text-ink">Henüz Ürün Bulunmuyor</h3>
+                                    <p class="text-xs text-ink-soft mt-1">Veritabanında kayıtlı herhangi bir menü ürünü bulunamadı. Yeni bir ürün ekleyerek başlayabilirsiniz.</p>
+                                    <div class="mt-4">
+                                        <a href="/Product/AddProduct" class="btn btn-primary text-xs shadow-xs">
+                                            Yeni Ürün Ekle
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ============ SAYFALAMA (PAGINATION) ============ -->
+        @if (Model != null && Model.Any())
+        {
+            <div class="px-6 py-4 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink-soft bg-card">
+                <span>
+                    Toplam <strong>@Model.TotalItemCount</strong> üründen (Sayfa <strong>@Model.PageNumber</strong> / <strong>@Model.PageCount</strong>)
+                </span>
+                
+                <div class="inline-flex items-center gap-1">
+                    <!-- Önceki Sayfa Butonu -->
+                    @if (Model.HasPreviousPage)
+                    {
+                        <a href="/Product/Index?page=@(Model.PageNumber - 1)&size=@Model.PageSize" 
+                           class="p-1.5 rounded-lg border border-line bg-card hover:bg-brand-50 text-ink-soft transition-colors"
+                           title="Önceki Sayfa">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="p-1.5 rounded-lg border border-line bg-card text-ink-soft opacity-35 cursor-not-allowed" title="İlk sayfadasınız">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                    }
+
+                    <!-- Sayfa Numaraları (1, 2, 3...) -->
+                    @for (int p = 1; p <= Model.PageCount; p++)
+                    {
+                        if (p == Model.PageNumber)
+                        {
+                            <span class="w-8 h-8 rounded-lg bg-brand-500 text-white font-semibold grid place-items-center shadow-xs">
+                                @p
+                            </span>
+                        }
+                        else
+                        {
+                            <a href="/Product/Index?page=@p&size=@Model.PageSize" 
+                               class="w-8 h-8 rounded-lg border border-line bg-card hover:bg-brand-50 text-ink font-semibold grid place-items-center transition-colors">
+                                @p
+                            </a>
+                        }
+                    }
+
+                    <!-- Sonraki Sayfa Butonu -->
+                    @if (Model.HasNextPage)
+                    {
+                        <a href="/Product/Index?page=@(Model.PageNumber + 1)&size=@Model.PageSize" 
+                           class="p-1.5 rounded-lg border border-line bg-card hover:bg-brand-50 text-ink-soft transition-colors"
+                           title="Sonraki Sayfa">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="p-1.5 rounded-lg border border-line bg-card text-ink-soft opacity-35 cursor-not-allowed" title="Son sayfadasınız">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+</div>
+
+<script>
+// ============ ÜRÜN DURUMU DEĞİŞTİR (AJAX) ============
+async function changeProductStatus(id, name) {
+    const badge = document.getElementById(`status-badge-${id}`);
+    const row = document.getElementById(`product-row-${id}`);
+
+    // Mevcut durumu yedekle ve yükleniyor animasyonu göster
+    let previousHtml = '';
+    let previousClass = '';
+    let currentStatus = true;
+
+    if (badge) {
+        previousHtml = badge.innerHTML;
+        previousClass = badge.className;
+        currentStatus = badge.getAttribute('data-status') === 'true';
+
+        badge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-600 border border-brand-100 animate-pulse";
+        badge.innerHTML = `
+            <svg class="w-3 h-3 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Güncelleniyor...</span>
+        `;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('id', id);
+
+        const response = await fetch('/Product/ChangeStatus', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        let result = {};
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+            result = await response.json();
+        } else {
+            result = { 
+                success: response.ok, 
+                message: `"${name}" ürününün durumu başarıyla değiştirildi.`,
+                newStatus: !currentStatus
+            };
+        }
+
+        if (result.success) {
+            // Yeni durumu belirle
+            const isNowActive = (typeof result.newStatus === 'boolean') ? result.newStatus : !currentStatus;
+
+            if (badge) {
+                badge.setAttribute('data-status', isNowActive ? 'true' : 'false');
+                badge.className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all duration-300 ${
+                    isNowActive ? 'bg-ok/15 text-ok' : 'bg-warn/15 text-warn'
+                }`;
+                badge.innerHTML = `
+                    <span class="w-1.5 h-1.5 rounded-full ${isNowActive ? 'bg-ok' : 'bg-warn'}"></span>
+                    <span>${isNowActive ? 'Aktif' : 'Pasif'}</span>
+                `;
+            }
+
+            // Üstteki özet sayaçlarını güncelle
+            const activeStat = document.getElementById('stat-active-count');
+            const passiveStat = document.getElementById('stat-passive-count');
+            if (activeStat && passiveStat) {
+                let currentActive = parseInt(activeStat.textContent.trim(), 10) || 0;
+                let currentPassive = parseInt(passiveStat.textContent.trim(), 10) || 0;
+                if (isNowActive) {
+                    activeStat.textContent = currentActive + 1;
+                    passiveStat.textContent = Math.max(0, currentPassive - 1);
+                } else {
+                    activeStat.textContent = Math.max(0, currentActive - 1);
+                    passiveStat.textContent = currentPassive + 1;
+                }
+            }
+
+            // Satırı hafif parlatarak görsel onay ver
+            if (row) {
+                row.classList.add('bg-brand-50/80');
+                setTimeout(() => {
+                    row.classList.remove('bg-brand-50/80');
+                }, 700);
+            }
+
+            showNotification(result.message || `"${name}" ürününün durumu değiştirildi.`, 'success');
+        } else {
+            // Başarısız olursa eski görünüme geri dön
+            if (badge && previousHtml) {
+                badge.innerHTML = previousHtml;
+                badge.className = previousClass;
+            }
+            showNotification(result.message || 'Durum değiştirilirken bir hata oluştu.', 'error');
+        }
+    } catch (err) {
+        console.error('ChangeStatus AJAX hatası:', err);
+        if (badge && previousHtml) {
+            badge.innerHTML = previousHtml;
+            badge.className = previousClass;
+        }
+        showNotification('Sunucuyla iletişim kurulurken bir hata oluştu.', 'error');
+    }
+}
+
+// ============ ÜRÜN SİL (AJAX) ============
+async function deleteProduct(id, name) {
+    if (!confirm(`"${name}" ürününü ve depodaki görselini kalıcı olarak silmek istediğinizden emin misiniz?`)) {
+        return;
+    }
+
+    const row = document.getElementById(`product-row-${id}`);
+    if (row) {
+        row.style.opacity = '0.4';
+        row.style.pointerEvents = 'none';
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('id', id);
+
+        const response = await fetch('/Product/DeleteProduct', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        let result = {};
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+            result = await response.json();
+        } else {
+            result = { success: response.ok, message: `"${name}" ürünü başarıyla silindi.` };
+        }
+
+        if (result.success) {
+            if (row) {
+                row.style.transition = 'all 0.4s ease';
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(20px)';
+                setTimeout(() => {
+                    row.remove();
+                    const tbody = document.querySelector('tbody');
+                    if (tbody && tbody.querySelectorAll('tr[id^="product-row-"]').length === 0) {
+                        window.location.reload();
+                    }
+                }, 400);
+            }
+
+            // Toplam ürün sayacını güncelle
+            const totalStat = document.getElementById('stat-total-count');
+            if (totalStat) {
+                let currentTotal = parseInt(totalStat.textContent.trim(), 10) || 0;
+                totalStat.textContent = Math.max(0, currentTotal - 1);
+            }
+
+            showNotification(result.message || 'Ürün başarıyla silindi.', 'success');
+        } else {
+            if (row) {
+                row.style.opacity = '1';
+                row.style.pointerEvents = 'auto';
+            }
+            showNotification(result.message || 'Silme işlemi sırasında bir hata oluştu.', 'error');
+        }
+    } catch (err) {
+        console.error('Silme hatası:', err);
+        if (row) {
+            row.style.opacity = '1';
+            row.style.pointerEvents = 'auto';
+        }
+        showNotification('Sunucuyla iletişim kurulurken bir hata oluştu.', 'error');
+    }
+}
+
+// ============ BİLDİRİM TOAST ============
+function showNotification(message, type = 'success') {
+    const isSuccess = type === 'success';
+    const toast = document.createElement('div');
+    toast.className = `fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium transition-all duration-300 transform translate-y-4 opacity-0 ${
+        isSuccess ? 'bg-card border-ok/30 text-ok' : 'bg-card border-bad/30 text-bad'
+    }`;
+    toast.innerHTML = `
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="${isSuccess ? 'M5 13l4 4L19 7' : 'M6 18L18 6M6 6l12 12'}" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>${message}</span>
+    `;
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-4', 'opacity-0');
+    });
+
+    setTimeout(() => {
+        toast.classList.add('translate-y-4', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+</script>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        const productStatsConnection = new signalR.HubConnectionBuilder()
+            .withUrl('/signalrhub')
+            .withAutomaticReconnect()
+            .build();
+
+        function updateProductStatistics(stats) {
+            document.getElementById('product-total-badge').textContent = stats.totalProducts;
+            document.getElementById('stat-total-count').textContent = stats.totalProducts;
+            document.getElementById('stat-active-count').textContent = stats.activeProducts;
+            document.getElementById('stat-passive-count').textContent = stats.passiveProducts;
+            document.getElementById('stat-average-price').textContent = '₺' +
+                Number(stats.averagePrice).toLocaleString('tr-TR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+        }
+
+        productStatsConnection.on('ProductStatistics', updateProductStatistics);
+        productStatsConnection.on('ProductStatisticsChanged', () =>
+            productStatsConnection.invoke('SendProductStatistics'));
+
+        async function startProductStatsConnection() {
+            try {
+                await productStatsConnection.start();
+                await productStatsConnection.invoke('SendProductStatistics');
+            } catch (error) {
+                console.error('Ürün istatistikleri alınamadı:', error);
+                setTimeout(startProductStatsConnection, 5000);
+            }
+        }
+
+        productStatsConnection.onreconnected(() =>
+            productStatsConnection.invoke('SendProductStatistics'));
+        startProductStatsConnection();
+    </script>
+}

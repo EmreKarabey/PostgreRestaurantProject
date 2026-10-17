@@ -1,0 +1,63 @@
+@{
+    Layout = null;
+    ViewData["Title"] = "Erişim Yetkiniz Yok | Dina Kafe";
+}
+
+<!DOCTYPE html>
+<html lang="tr" class="h-full">
+@await Html.PartialAsync("/Views/PartialView/HeadPartialView.cshtml")
+
+<style>
+    /* Input ve butonların iç odaklanma çizgilerini (outline/border) kaldır */
+    input:focus, input:focus-visible,
+    button:focus, button:focus-visible {
+        outline: none !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+</style>
+
+<body class="h-full min-h-screen text-ink font-sans antialiased relative flex items-center justify-center p-4 selection:bg-brand-500 selection:text-white overflow-hidden">
+
+    <!-- ============ TAM EKRAN KAHVE ARKA PLANI ============ -->
+    <div class="fixed inset-0 z-0">
+        <img src="https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1920&auto=format&fit=crop&q=85"
+             alt="Dina Kafe"
+             class="w-full h-full object-cover scale-105" />
+        <!-- Karartma ve Sıcak Espresso Gradyan Katmanı -->
+        <div class="absolute inset-0 bg-gradient-to-tr from-ink/90 via-ink/75 to-ink/65 backdrop-blur-[2px]"></div>
+        <!-- İnce Altın Işıma Efekti -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-bad/15 rounded-full blur-3xl pointer-events-none"></div>
+    </div>
+
+    <!-- ============ ORTALANMIŞ ŞIK GLASSMORPHIC KART ============ -->
+    <div class="relative z-10 w-full max-w-[420px]">
+
+        <div class="bg-card/95 backdrop-blur-xl border border-line/80 rounded-3xl p-7 sm:p-9 shadow-2xl shadow-ink/50 space-y-6">
+
+            <!-- İkon -->
+            <div class="w-20 h-20 mx-auto rounded-3xl bg-bad/10 text-bad flex items-center justify-center border border-bad/20">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+            </div>
+
+            <!-- Başlık ve Açıklama -->
+            <div class="text-center space-y-3">
+                <span class="inline-block px-3 py-1 text-xs font-bold tracking-wider text-bad uppercase bg-bad/10 rounded-full">403 Hata Kodu</span>
+                <h1 class="font-display text-2xl sm:text-3xl font-bold text-ink">
+                    Erişim Yetkiniz Yok
+                </h1>
+                <p class="text-sm text-ink-soft leading-relaxed">
+                    Bu sayfayı görüntülemek veya bu işlemi gerçekleştirmek için gerekli yetkiye sahip değilsiniz.
+                </p>
+            </div>
+
+
+        </div>
+
+    </div>
+
+</body>
+</html>

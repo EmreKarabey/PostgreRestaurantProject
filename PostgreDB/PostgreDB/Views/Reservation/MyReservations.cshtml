@@ -1,0 +1,85 @@
+
+@model IPagedList<GetMyRservationListDto>
+@using X.PagedList
+
+@{
+    ViewData["Title"] = "Rezervasyonlarım";
+    Layout = "_Layout";
+    var trCulture = System.Globalization.CultureInfo.GetCultureInfo("tr-TR");
+    var pageSize = Model.PageSize;
+}
+
+<section class="topSingleBkg topPageBkg">
+    <div class="item-content-bkg">
+        <div class="item-img" style="background-image:url('@Url.Content("~/image/restaurant4.jpg")');"></div>
+        <div class="inner-desc">
+            <h1 class="post-title single-post-title">Rezervasyonlarım</h1>
+            <span class="post-subtitle">Masa planlarınızı buradan görüntüleyin.</span>
+        </div>
+    </div>
+</section>
+
+<section class="my-reservations-page">
+    <div class="container">
+        <div class="my-reservations-header">
+            <div>
+                <span class="home-subtitle">Dina Restoranı</span>
+                <h2>Rezervasyonlarım</h2>
+                <p>Yaklaşan ve geçmiş rezervasyonlarınızın özeti.</p>
+            </div>
+            <a asp-controller="Reservation" asp-action="Index" class="view-more">Yeni Rezervasyon</a>
+        </div>
+
+        <div class="my-reservations-list">
+            @if (!Model.Any())
+            {
+                <p>Henüz bir rezervasyonunuz bulunmuyor.</p>
+            }
+            @foreach (var reservation in Model)
+            {
+                var statusClass = reservation.Status == "Confirm" ? "confirmed" : reservation.Status == "Pending" ? "pending" : "completed";
+                var statusText = reservation.Status == "Confirm" ? "Onaylandı" : reservation.Status == "Pending" ? "Bekliyor" : reservation.Status;
+                <article class="my-reservation-card">
+                    <div class="my-reservation-date">
+                        <span>@reservation.ReservationDate.ToString("MMM", trCulture).ToUpper(trCulture)</span>
+                        <strong>@reservation.ReservationDate.ToString("dd")</strong>
+                        <small>@reservation.ReservationDate.ToString("yyyy")</small>
+                    </div>
+                    <div class="my-reservation-main">
+                        <div class="my-reservation-title-row">
+                            <h3>@reservation.ReservationDate.ToString("dddd, dd MMMM yyyy", trCulture)</h3>
+                            <span class="reservation-status @statusClass">@statusText</span>
+                        </div>
+                        <div class="my-reservation-details">
+                            <span><i class="fa fa-clock-o"></i> @reservation.ReservationDate.ToString("HH:mm")</span>
+                            <span><i class="fa fa-users"></i> @reservation.NumberOfPeople kişi</span>
+                            @if (reservation.TableNumber.HasValue)
+                            {
+                                <span><i class="fa fa-table"></i> Masa @reservation.TableNumber</span>
+                            }
+                        </div>
+                        <small class="my-reservation-code">@reservation.FirstName @reservation.LastName</small>
+                    </div>
+                </article>
+            }
+        </div>
+
+        @if (Model.PageCount > 1)
+        {
+            <nav class="reservation-pagination" aria-label="Rezervasyon sayfaları">
+                @if (Model.HasPreviousPage)
+                {
+                    <a asp-action="MyReservations" asp-route-page="@(Model.PageNumber - 1)" asp-route-size="@pageSize">Önceki</a>
+                }
+                @for (var pageNumber = 1; pageNumber <= Model.PageCount; pageNumber++)
+                {
+                    <a asp-action="MyReservations" asp-route-page="@pageNumber" asp-route-size="@pageSize" class="@(pageNumber == Model.PageNumber ? "active" : "")" aria-current="@(pageNumber == Model.PageNumber ? "page" : null)">@pageNumber</a>
+                }
+                @if (Model.HasNextPage)
+                {
+                    <a asp-action="MyReservations" asp-route-page="@(Model.PageNumber + 1)" asp-route-size="@pageSize">Sonraki</a>
+                }
+            </nav>
+        }
+    </div>
+</section>

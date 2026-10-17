@@ -1,0 +1,45 @@
+﻿<header id="header-1">
+	<div class="headerWrap-1">
+		<nav class="navbar-1">
+			<!-- TOP LEFT PAGE TEXT  -->
+			<div class="top-location">
+				<span class="info-txt">40 Park Ave, Brooklyn, New York 70250</span>
+			</div>
+			<!-- TOP RIGHT PAGE TEXT  -->
+			<div class="book-now">
+				<span class="info-txt">Şimdi Arayın</span>
+				<span class="info-txt">000-111-222</span>
+			</div>
+			<!-- MOBILE BUTTON NAV  -->
+			<div class="nav-button-holder nav-btn-mobile inactive">
+				<span class="menu-txt">MENÜ</span>
+				<button type="button" class="nav-button">
+					<span class="icon-bar"></span>
+				</button>
+			</div>
+			<div class="nav-content-1">
+				<!-- LOGO -->
+				<div class="logo-1"><a href="index.html"><img class="img-fluid" src="~/dina-html/images/logo-dina-white.png" alt="" /></a></div>
+				<!-- MENU -->
+				<div class="nav-holder nav-holder-1 nav-holder-desktop">
+					<ul id="menu-menu-1" class="menu-nav menu-nav-1">
+						<li class="menu-item menu-item-has-children @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "current-menu-item" : "")">
+							<a href="/">Ana Sayfa</a>
+							
+						</li>
+						<li class="menu-item menu-item-has-children">
+							<a href="/Menu/Index">Menü</a>
+						</li>
+						<li class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Reviews" ? "current-menu-item" : "")">
+							<a href="/Reviews/Index">Yorumlar</a>
+						</li>
+						<li class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Reservation" ? "current-menu-item" : "")"><a href="/Reservation/MyReservations">Rezervasyon</a></li>
+					</ul>
+				
+				</div>
+				<!-- /MENU -->
+			</div>
+		</nav>
+	</div>
+	<!--headerWrap-->
+</header>

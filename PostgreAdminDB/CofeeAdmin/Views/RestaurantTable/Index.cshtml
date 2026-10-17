@@ -1,0 +1,580 @@
+@model List<CofeeAdmin.Dto.RestaurantTable.SaveRestaurantTableLayoutDto>
+
+@{
+    ViewData["Title"] = "Masa Düzeni";
+}
+
+<link rel="stylesheet" href="~/css/table-layout.css" asp-append-version="true" />
+
+<section class="table-editor-page" aria-labelledby="table-editor-title">
+    <header class="table-editor-heading">
+        <div>
+            <h1 id="table-editor-title">Masa Düzeni</h1>
+            <p>Masaları sürükleyip bırakarak restoran planınızı oluşturun.</p>
+        </div>
+        <div class="table-editor-heading-actions">
+            <span class="draft-badge"><span></span> Masa düzeni</span>
+            <button type="button" class="editor-button editor-button-primary" id="save-layout">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h12l4 4v14H3V3h2zm2 0v6h10V3M7 21v-7h10v7" /></svg>
+                Düzeni kaydet
+            </button>
+        </div>
+    </header>
+
+    <div class="table-editor-summary" aria-label="Masa özeti">
+        <div class="summary-card summary-card-dark">
+            <span class="summary-icon">⌑</span>
+            <div><strong id="table-count">6</strong><span>Toplam masa</span></div>
+        </div>
+        <div class="summary-card">
+            <span class="summary-icon summary-icon-gold">♙</span>
+            <div><strong id="seat-count">24</strong><span>Toplam kapasite</span></div>
+        </div>
+        <div class="summary-card summary-card-note">
+            <span class="summary-note-dot"></span>
+            <div><strong>Yerleşim editörü</strong><span>Masayı seçip özelliklerini düzenleyin</span></div>
+        </div>
+    </div>
+
+    <div class="table-editor-grid">
+        <section class="floor-card" aria-label="Restoran kat planı">
+            <div class="floor-card-header">
+                <div>
+                    <h2>Restoran Kat Planı</h2>
+                    <p>Masayı tutup istediğiniz yere sürükleyin.</p>
+                </div>
+                <div class="floor-actions">
+                    <button type="button" class="editor-button editor-button-light" data-add-shape="round" title="Yuvarlak masa ekle">
+                        <span class="add-shape round-preview"></span> Masa ekle
+                    </button>
+                    <button type="button" class="editor-button editor-button-light square-add-button" data-add-shape="square" title="Kare masa ekle">
+                        <span class="add-shape square-preview"></span> Kare ekle
+                    </button>
+                </div>
+            </div>
+
+            <div class="floor-canvas-wrap">
+                <div class="floor-canvas" id="floor-canvas" aria-label="Sürüklenebilir masa planı">
+                    <div class="floor-top-wall"></div>
+                    <div class="floor-left-wall"></div>
+                    <div class="floor-right-wall"></div>
+                    <div class="service-counter">
+                        <span class="counter-icon" aria-hidden="true">♨</span>
+                        <span>MUTFAK VE BAR SERVİS ALANI</span>
+                    </div>
+                    <div class="floor-plant plant-one"><span></span></div>
+                    <div class="floor-plant plant-two"><span></span></div>
+                    <div class="floor-window">CAM / MANZARA</div>
+                    <div class="floor-door"><i></i> GİRİŞ / ÇIKIŞ KAPISI</div>
+                    <div id="selection-box" class="table-selection-box" hidden aria-hidden="true"></div>
+                    <div id="table-layer" class="table-layer"></div>
+                </div>
+            </div>
+
+            <footer class="floor-card-footer">
+                <div class="floor-legend">
+                    <span><i class="legend-table"></i> Restoran masası</span>
+                    <span><i class="legend-selected"></i> Seçili masa</span>
+                    <span><i class="legend-door"></i> Giriş / çıkış kapısı</span>
+                </div>
+                <span class="drag-hint"><kbd>Boş alanda sürükle</kbd> çoklu seç · Seçili masaları birlikte taşı · <kbd>Ctrl + sürükle</kbd> masayı kopyala</span>
+            </footer>
+        </section>
+
+        <aside class="inspector-card" aria-label="Masa özellikleri">
+            <div class="inspector-heading">
+                <div class="inspector-heading-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h16M6 10V6h12v4M7 10v8m10-8v8M4 18h16" /></svg>
+                </div>
+                <div><h2>Masa özellikleri</h2><p>Seçili masayı düzenleyin</p></div>
+            </div>
+
+            <div id="inspector-empty" class="inspector-empty hidden">
+                <span>♧</span>
+                <strong>Henüz masa seçilmedi</strong>
+                <p>Plan üzerindeki bir masaya tıklayarak düzenlemeye başlayın.</p>
+            </div>
+
+            <div id="inspector-multi" class="inspector-empty hidden">
+                <span>▧</span>
+                <strong><span id="selected-table-count">0</span> masa seçildi</strong>
+                <p>Birden fazla masanın özelliklerini birlikte düzenleme henüz desteklenmiyor.</p>
+            </div>
+
+            <div id="inspector-fields" class="inspector-fields">
+                <div class="selected-table-preview">
+                    <span class="selected-table-icon" id="selected-table-icon">M1</span>
+                    <div><strong id="selected-table-title">Masa 1</strong><span id="selected-table-meta">Yuvarlak masa</span></div>
+                    <span class="selected-status"><i></i> Aktif</span>
+                </div>
+
+                <label class="inspector-label" for="table-number">Masa numarası</label>
+                <div class="input-with-prefix"><span>#</span><input id="table-number" type="number" min="1" max="99" /></div>
+
+                <label class="inspector-label" for="table-capacity">Kişi kapasitesi</label>
+                <select class="inspector-select" id="table-capacity">
+                    <option value="2">2 kişi</option>
+                    <option value="4">4 kişi</option>
+                    <option value="6">6 kişi</option>
+                    <option value="8">8 kişi</option>
+                </select>
+
+                <span class="inspector-label">Masa şekli</span>
+                <div class="shape-choices" role="group" aria-label="Masa şekli">
+                    <button type="button" class="shape-choice" data-shape-choice="round"><span class="round-preview"></span> Yuvarlak</button>
+                    <button type="button" class="shape-choice" data-shape-choice="square"><span class="square-preview"></span> Kare</button>
+                </div>
+
+                <div class="rotation-row">
+                    <div><span class="inspector-label">Döndürme</span><span id="rotation-value">0°</span></div>
+                    <button type="button" class="rotate-button" id="rotate-table" aria-label="Masayı 45 derece döndür">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.5-4L4 9m0 0V4m0 5h5m-5 4a8 8 0 0 0 14.5 4L20 15m0 0v5m0-5h-5" /></svg>
+                        45° döndür
+                    </button>
+                </div>
+
+                <button type="button" class="delete-table-button" id="delete-table">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 14h10l1-14M9 7V4h6v3" /></svg>
+                    Seçili masaları kaldır
+                </button>
+            </div>
+
+            <div class="inspector-tip"><span>✦</span><p>Düzeni kaydettiğinizde yeni masalar eklenir, kayıtlı masalardaki değişiklikler güncellenir.</p></div>
+        </aside>
+    </div>
+
+    <div class="editor-bottom-bar">
+        <span><i></i> <span id="save-state">Düzenlenmemiş taslak</span></span>
+        <button type="button" class="reset-layout-button" id="reset-layout">Başlangıç düzenine dön</button>
+    </div>
+
+    <div class="editor-toast" id="editor-toast" role="status" aria-live="polite"></div>
+</section>
+
+@{
+    var layoutSavedMessage = TempData["TableLayoutSaved"] as string;
+    var layoutErrorMessage = TempData["TableLayoutError"] as string;
+}
+
+@if (!string.IsNullOrEmpty(layoutSavedMessage) || !string.IsNullOrEmpty(layoutErrorMessage))
+{
+    <div id="table-layout-result" hidden
+         data-message="@(layoutSavedMessage ?? layoutErrorMessage)"
+         data-is-error="@(!string.IsNullOrEmpty(layoutErrorMessage) ? "true" : "false")"></div>
+}
+
+<form asp-controller="RestaurantTable" asp-action="SaveLayout" method="post" id="table-layout-save-form" hidden>
+    @Html.AntiForgeryToken()
+    <div id="table-layout-save-fields"></div>
+</form>
+
+@section Scripts {
+    <script>
+        (() => {
+            const storageKey = "dina-restaurant-table-layout-draft-v2";
+            const fallbackTables = [
+                { id: 1, number: 1, x: 0.195, y: 0.334, capacity: 4, shape: "round", rotation: 0 },
+                { id: 2, number: 2, x: 0.420, y: 0.334, capacity: 4, shape: "square", rotation: 0 },
+                { id: 3, number: 3, x: 0.645, y: 0.334, capacity: 4, shape: "round", rotation: 0 },
+                { id: 4, number: 4, x: 0.870, y: 0.334, capacity: 4, shape: "square", rotation: 0 },
+                { id: 5, number: 5, x: 0.195, y: 0.570, capacity: 4, shape: "round", rotation: 0 },
+                { id: 6, number: 6, x: 0.420, y: 0.570, capacity: 4, shape: "square", rotation: 0 },
+                { id: 7, number: 7, x: 0.645, y: 0.570, capacity: 4, shape: "round", rotation: 0 },
+                { id: 8, number: 8, x: 0.870, y: 0.570, capacity: 4, shape: "square", rotation: 0 },
+                { id: 9, number: 9, x: 0.195, y: 0.806, capacity: 4, shape: "round", rotation: 0 },
+                { id: 10, number: 10, x: 0.420, y: 0.806, capacity: 4, shape: "square", rotation: 0 },
+                { id: 11, number: 11, x: 0.645, y: 0.806, capacity: 4, shape: "round", rotation: 0 },
+                { id: 12, number: 12, x: 0.870, y: 0.806, capacity: 4, shape: "square", rotation: 0 }
+            ];
+            const databaseTables = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                Model.Select(table => new
+                {
+                    id = table.TableNumber,
+                    number = table.TableNumber,
+                    x = table.PositionX,
+                    y = table.PositionY,
+                    capacity = table.Capacity,
+                    shape = table.Shape,
+                    rotation = table.Rotation
+                })));
+            const initialTables = databaseTables.length > 0 ? databaseTables : fallbackTables;
+
+            let tables;
+            try {
+                if (databaseTables.length > 0) {
+                    tables = JSON.parse(JSON.stringify(databaseTables));
+                } else {
+                    const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+                    tables = Array.isArray(saved) && saved.length > 0
+                        ? saved.map(table => ({
+                            ...table,
+                            x: Number(table.x) > 1 ? Number(table.x) / 100 : Number(table.x),
+                            y: Number(table.y) > 1 ? Number(table.y) / 100 : Number(table.y)
+                        }))
+                        : JSON.parse(JSON.stringify(fallbackTables));
+                }
+            } catch {
+                tables = JSON.parse(JSON.stringify(initialTables));
+            }
+
+            let selectedIds = new Set(tables[0] ? [tables[0].id] : []);
+            let selectedId = tables[0]?.id ?? null;
+            let dragState = null;
+            let marqueeState = null;
+            let toastTimer;
+            const canvas = document.getElementById("floor-canvas");
+            const layer = document.getElementById("table-layer");
+            const selectionBox = document.getElementById("selection-box");
+            const inspectorEmpty = document.getElementById("inspector-empty");
+            const inspectorMulti = document.getElementById("inspector-multi");
+            const inspectorFields = document.getElementById("inspector-fields");
+            const saveState = document.getElementById("save-state");
+
+            function selectedTable() {
+                return tables.find(table => table.id === selectedId) ?? null;
+            }
+
+            function nextTableNumber() {
+                const usedNumbers = new Set(tables.map(table => Number(table.number)));
+                let number = 1;
+                while (usedNumbers.has(number)) number++;
+                return number;
+            }
+
+            function nextTableId() {
+                let id = Date.now();
+                while (tables.some(table => table.id === id)) id++;
+                return id;
+            }
+
+            function renderTables() {
+                layer.innerHTML = tables.map(table => `
+                    <button type="button" class="table-node ${table.shape === "square" ? "table-square" : "table-round"} ${selectedIds.has(table.id) ? "is-selected" : ""}"
+                            data-table-id="${table.id}" style="left:${table.x * 100}%;top:${table.y * 100}%;--table-rotation:${table.rotation}deg"
+                            aria-label="Masa ${table.number}, ${table.capacity} kişilik">
+                        <span class="table-seat seat-top"></span><span class="table-seat seat-right"></span>
+                        <span class="table-seat seat-bottom"></span><span class="table-seat seat-left"></span>
+                        <span class="table-surface"><strong>M${table.number}</strong><small>${table.capacity} Kişi</small></span>
+                    </button>`).join("");
+                updateSummary();
+                renderInspector();
+            }
+
+            function updateSummary() {
+                document.getElementById("table-count").textContent = tables.length;
+                document.getElementById("seat-count").textContent = tables.reduce((sum, table) => sum + Number(table.capacity || 0), 0);
+            }
+
+            function renderInspector() {
+                const table = selectedTable();
+                const hasMultiple = selectedIds.size > 1;
+                inspectorEmpty.classList.toggle("hidden", Boolean(table) || hasMultiple);
+                inspectorMulti.classList.toggle("hidden", !hasMultiple);
+                inspectorFields.classList.toggle("hidden", !table || hasMultiple);
+                document.getElementById("selected-table-count").textContent = selectedIds.size;
+                if (!table) return;
+
+                document.getElementById("selected-table-icon").textContent = `M${table.number}`;
+                document.getElementById("selected-table-title").textContent = `Masa ${table.number}`;
+                document.getElementById("selected-table-meta").textContent = table.shape === "round" ? "Yuvarlak masa" : "Kare masa";
+                document.getElementById("table-number").value = table.number;
+                document.getElementById("table-capacity").value = table.capacity;
+                document.getElementById("rotation-value").textContent = `${table.rotation}°`;
+                document.querySelectorAll("[data-shape-choice]").forEach(button => {
+                    button.classList.toggle("is-active", button.dataset.shapeChoice === table.shape);
+                });
+            }
+
+            function markUnsaved() {
+                saveState.textContent = "Kaydedilmemiş değişiklikler";
+                saveState.classList.add("is-dirty");
+                saveState.parentElement.classList.add("is-dirty");
+            }
+
+            function showToast(message, isError = false) {
+                const toast = document.getElementById("editor-toast");
+                toast.textContent = message;
+                toast.classList.toggle("toast-error", isError);
+                toast.classList.add("is-visible");
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 2800);
+            }
+
+            function updateSelectedTable(update) {
+                const table = selectedTable();
+                if (!table) return;
+                Object.assign(table, update);
+                renderTables();
+                markUnsaved();
+            }
+
+            function deleteSelectedTables() {
+                if (selectedIds.size === 0) return;
+
+                const deletedCount = selectedIds.size;
+                const selected = new Set(selectedIds);
+                tables = tables.filter(table => !selected.has(table.id));
+                selectedId = tables[0]?.id ?? null;
+                selectedIds = new Set(selectedId === null ? [] : [selectedId]);
+                renderTables();
+                markUnsaved();
+                showToast(`${deletedCount} masa taslaktan kaldırıldı.`);
+            }
+
+            layer.addEventListener("pointerdown", event => {
+                if (event.button !== 0) return;
+                const node = event.target.closest(".table-node");
+                if (!node) {
+                    const rect = canvas.getBoundingClientRect();
+                    const additive = event.shiftKey || event.ctrlKey || event.metaKey;
+                    const initialIds = additive ? new Set(selectedIds) : new Set();
+                    if (!additive) selectedIds.clear();
+                    layer.querySelectorAll(".table-node").forEach(item => item.classList.toggle("is-selected", selectedIds.has(Number(item.dataset.tableId))));
+                    selectedId = null;
+                    renderInspector();
+                    marqueeState = { startX: event.clientX, startY: event.clientY, rect, additive, initialIds, moved: false };
+                    selectionBox.hidden = false;
+                    selectionBox.style.left = `${event.clientX - rect.left}px`;
+                    selectionBox.style.top = `${event.clientY - rect.top}px`;
+                    selectionBox.style.width = "0px";
+                    selectionBox.style.height = "0px";
+                    layer.setPointerCapture(event.pointerId);
+                    event.preventDefault();
+                    return;
+                }
+
+                const id = Number(node.dataset.tableId);
+                if (event.ctrlKey) {
+                    const source = tables.find(table => table.id === id);
+                    if (!source) return;
+
+                    const copy = {
+                        ...source,
+                        id: nextTableId(),
+                        number: nextTableNumber()
+                    };
+                    tables.push(copy);
+                    selectedIds = new Set([copy.id]);
+                    selectedId = copy.id;
+                    renderTables();
+
+                    const rect = canvas.getBoundingClientRect();
+                    dragState = {
+                        rect,
+                        startX: event.clientX,
+                        startY: event.clientY,
+                        tables: [{ id: copy.id, x: copy.x, y: copy.y }],
+                        moved: false,
+                        createdCopy: true
+                    };
+                    layer.setPointerCapture(event.pointerId);
+                    event.preventDefault();
+                    return;
+                }
+
+                const additive = event.shiftKey || event.ctrlKey || event.metaKey;
+                if (additive) {
+                    if (selectedIds.has(id)) selectedIds.delete(id);
+                    else selectedIds.add(id);
+                    if (selectedIds.size === 0) selectedId = null;
+                    else if (selectedIds.size === 1) selectedId = [...selectedIds][0];
+                    else selectedId = null;
+                } else if (!selectedIds.has(id)) {
+                    selectedIds = new Set([id]);
+                    selectedId = id;
+                }
+                if (!selectedIds.has(id)) {
+                    renderTables();
+                    return;
+                }
+                layer.querySelectorAll(".table-node").forEach(item => item.classList.toggle("is-selected", selectedIds.has(Number(item.dataset.tableId))));
+                renderInspector();
+                const rect = canvas.getBoundingClientRect();
+                dragState = {
+                    rect,
+                    startX: event.clientX,
+                    startY: event.clientY,
+                    tables: tables.filter(table => selectedIds.has(table.id)).map(table => ({ id: table.id, x: table.x, y: table.y })),
+                    moved: false
+                };
+                layer.setPointerCapture(event.pointerId);
+                event.preventDefault();
+            });
+
+            layer.addEventListener("pointermove", event => {
+                if (marqueeState) {
+                    const left = Math.min(event.clientX, marqueeState.startX) - marqueeState.rect.left;
+                    const top = Math.min(event.clientY, marqueeState.startY) - marqueeState.rect.top;
+                    const width = Math.abs(event.clientX - marqueeState.startX);
+                    const height = Math.abs(event.clientY - marqueeState.startY);
+                    selectionBox.style.left = `${left}px`;
+                    selectionBox.style.top = `${top}px`;
+                    selectionBox.style.width = `${width}px`;
+                    selectionBox.style.height = `${height}px`;
+                    marqueeState.moved = width > 3 || height > 3;
+
+                    if (marqueeState.moved) {
+                        const selectionRect = { left: left + marqueeState.rect.left, top: top + marqueeState.rect.top, right: left + marqueeState.rect.left + width, bottom: top + marqueeState.rect.top + height };
+                        const selectedInBox = [...layer.querySelectorAll(".table-node")].filter(tableNode => {
+                            const tableRect = tableNode.getBoundingClientRect();
+                            return tableRect.right >= selectionRect.left && tableRect.left <= selectionRect.right && tableRect.bottom >= selectionRect.top && tableRect.top <= selectionRect.bottom;
+                        }).map(tableNode => Number(tableNode.dataset.tableId));
+                        selectedIds = new Set([...marqueeState.initialIds, ...selectedInBox]);
+                        selectedId = selectedIds.size === 1 ? [...selectedIds][0] : null;
+                        layer.querySelectorAll(".table-node").forEach(item => item.classList.toggle("is-selected", selectedIds.has(Number(item.dataset.tableId))));
+                        renderInspector();
+                    }
+                    return;
+                }
+
+                if (!dragState) return;
+                const deltaX = (event.clientX - dragState.startX) / dragState.rect.width;
+                const deltaY = (event.clientY - dragState.startY) / dragState.rect.height;
+                const minDeltaX = Math.max(...dragState.tables.map(table => 0.06 - table.x));
+                const maxDeltaX = Math.min(...dragState.tables.map(table => 0.94 - table.x));
+                const minDeltaY = Math.max(...dragState.tables.map(table => 0.09 - table.y));
+                const maxDeltaY = Math.min(...dragState.tables.map(table => 0.91 - table.y));
+                const moveX = Math.max(minDeltaX, Math.min(maxDeltaX, deltaX));
+                const moveY = Math.max(minDeltaY, Math.min(maxDeltaY, deltaY));
+                dragState.tables.forEach(original => {
+                    const table = tables.find(item => item.id === original.id);
+                    table.x = original.x + moveX;
+                    table.y = original.y + moveY;
+                    const tableNode = layer.querySelector(`[data-table-id="${table.id}"]`);
+                    tableNode.style.left = `${table.x * 100}%`;
+                    tableNode.style.top = `${table.y * 100}%`;
+                });
+                dragState.moved = Math.abs(deltaX) > 0.002 || Math.abs(deltaY) > 0.002;
+            });
+
+            function finishDrag() {
+                if (marqueeState) {
+                    if (!marqueeState.moved && !marqueeState.additive) {
+                        selectedIds.clear();
+                        selectedId = null;
+                    }
+                    selectionBox.hidden = true;
+                    marqueeState = null;
+                    renderTables();
+                    return;
+                }
+                if (dragState?.moved || dragState?.createdCopy) markUnsaved();
+                if (dragState?.createdCopy) showToast(`Masa M${tables.find(table => table.id === selectedId)?.number} kopyalandı.`);
+                dragState = null;
+            }
+            layer.addEventListener("pointerup", finishDrag);
+            layer.addEventListener("pointercancel", finishDrag);
+
+            document.querySelectorAll("[data-add-shape]").forEach(button => button.addEventListener("click", () => {
+                const number = nextTableNumber();
+                const id = nextTableId();
+                const shape = button.dataset.addShape;
+                tables.push({ id, number, x: 0.5, y: 0.55, capacity: 4, shape, rotation: 0 });
+                selectedIds = new Set([id]);
+                selectedId = id;
+                renderTables();
+                markUnsaved();
+            }));
+
+            document.getElementById("table-number").addEventListener("change", event => {
+                const number = Number(event.target.value);
+                if (!Number.isInteger(number) || number < 1 || number > 99) {
+                    showToast("Masa numarası 1 ile 99 arasında olmalı.", true);
+                    renderInspector();
+                    return;
+                }
+                if (tables.some(table => table.id !== selectedId && Number(table.number) === number)) {
+                    showToast("Bu masa numarası zaten kullanılıyor.", true);
+                    renderInspector();
+                    return;
+                }
+                updateSelectedTable({ number });
+            });
+
+            document.getElementById("table-capacity").addEventListener("change", event => {
+                updateSelectedTable({ capacity: Number(event.target.value) });
+            });
+
+            document.querySelectorAll("[data-shape-choice]").forEach(button => button.addEventListener("click", () => {
+                updateSelectedTable({ shape: button.dataset.shapeChoice });
+            }));
+
+            document.getElementById("rotate-table").addEventListener("click", () => {
+                const table = selectedTable();
+                if (table) updateSelectedTable({ rotation: (Number(table.rotation) + 45) % 360 });
+            });
+
+            document.getElementById("delete-table").addEventListener("click", deleteSelectedTables);
+
+            document.addEventListener("keydown", event => {
+                const target = event.target;
+                if (event.key !== "Delete" || event.ctrlKey || event.altKey || event.metaKey
+                    || target instanceof HTMLInputElement
+                    || target instanceof HTMLTextAreaElement
+                    || target instanceof HTMLSelectElement
+                    || target.isContentEditable
+                    || selectedIds.size === 0) return;
+
+                event.preventDefault();
+                deleteSelectedTables();
+            });
+
+            document.getElementById("save-layout").addEventListener("click", () => {
+                localStorage.setItem(storageKey, JSON.stringify(tables));
+                if (tables.length === 0) {
+                    showToast("Kaydedilecek masa yok.", true);
+                    return;
+                }
+
+                const fields = document.getElementById("table-layout-save-fields");
+                fields.replaceChildren();
+                const form = document.getElementById("table-layout-save-form");
+                const addField = (name, value) => {
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = name;
+                    input.value = String(value);
+                    fields.append(input);
+                };
+                const formatCoordinate = value => Number(value).toFixed(6);
+
+                tables.forEach((table, index) => {
+                    const prefix = `layout[${index}]`;
+                    addField(`${prefix}.TableNumber`, table.number);
+                    addField(`${prefix}.PositionX`, formatCoordinate(table.x));
+                    addField(`${prefix}.PositionY`, formatCoordinate(table.y));
+                    addField(`${prefix}.Rotation`, table.rotation);
+                    addField(`${prefix}.Shape`, table.shape);
+                    addField(`${prefix}.Capacity`, table.capacity);
+                });
+
+                form.requestSubmit();
+            });
+
+            document.getElementById("reset-layout").addEventListener("click", () => {
+                tables = JSON.parse(JSON.stringify(initialTables));
+                selectedIds = new Set(tables[0] ? [tables[0].id] : []);
+                selectedId = tables[0]?.id ?? null;
+                localStorage.removeItem(storageKey);
+                saveState.textContent = "Kayıtlı düzen geri yüklendi";
+                saveState.classList.remove("is-dirty");
+                saveState.parentElement.classList.remove("is-dirty");
+                renderTables();
+                showToast("Kayıtlı masa düzeni geri yüklendi.");
+            });
+
+            renderTables();
+
+            const result = document.getElementById("table-layout-result");
+            if (result) {
+                showToast(result.dataset.message, result.dataset.isError === "true");
+                if (result.dataset.isError !== "true") {
+                    localStorage.removeItem(storageKey);
+                    saveState.textContent = "Yerleşim veritabanına kaydedildi";
+                    saveState.classList.remove("is-dirty");
+                    saveState.parentElement.classList.remove("is-dirty");
+                }
+            }
+        })();
+    </script>
+}

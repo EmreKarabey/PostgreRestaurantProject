@@ -1,0 +1,426 @@
+@using CofeeAdmin.Dto.AppUser
+@model AddUserDto
+
+@{
+    ViewData["Title"] = "Yeni Kullanıcı Ekle";
+    Layout = "_Layout";
+}
+
+<div class="space-y-8">
+
+    <!-- ============ ÜST BAŞLIK VE GERİ DÖNÜŞ ALANI ============ -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-line/70">
+        <div>
+            <div class="flex items-center gap-3">
+                <a href="/UserManagment/Index" 
+                   class="p-2 rounded-lg border border-line bg-card hover:bg-brand-50 text-ink-soft hover:text-ink transition-colors"
+                   title="Kullanıcı Listesine Dön">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <h1 class="font-display text-3xl font-bold tracking-tight text-ink">Yeni Kullanıcı Ekle</h1>
+            </div>
+            <p class="text-sm text-ink-soft mt-1 sm:ml-11">
+                Sisteme yeni bir yönetici veya personel hesabı tanımlayın ve profil bilgilerini oluşturun.
+            </p>
+        </div>
+
+        <!-- Sağ Aksiyon: Listeye Geri Dön -->
+        <div class="shrink-0">
+            <a href="/UserManagment/Index" class="btn btn-ghost text-xs">
+                <svg class="w-4 h-4 text-ink-soft" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Kullanıcı Listesine Dön</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ============ FORM VE CANLI ÖNİZLEME ALANI ============ -->
+    <div x-data="{ 
+            firstName: '@(Model?.FirstName ?? "")', 
+            lastName: '@(Model?.LastName ?? "")', 
+            username: '@(Model?.UserName ?? "")', 
+            email: '@(Model?.Email ?? "")', 
+            password: '', 
+            confirmPassword: '', 
+            showPassword: false,
+            showConfirmPassword: false,
+            image: '', 
+            fileName: '',
+            isDragging: false,
+            get fullName() {
+                const fn = (this.firstName + ' ' + this.lastName).trim();
+                return fn ? fn : 'Ad Soyad';
+            },
+            get initials() {
+                const f = (this.firstName || '').trim().charAt(0);
+                const l = (this.lastName || '').trim().charAt(0);
+                return (f + l).toUpperCase() || 'U';
+            },
+            handleFile(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    this.fileName = file.name;
+                    this.image = URL.createObjectURL(file);
+                }
+            },
+            handleDrop(event) {
+                const file = event.dataTransfer?.files?.[0];
+                if (file) {
+                    const input = document.getElementById('Image');
+                    if (input && event.dataTransfer) {
+                        input.files = event.dataTransfer.files;
+                    }
+                    this.fileName = file.name;
+                    this.image = URL.createObjectURL(file);
+                }
+            }
+         }" 
+         class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+        <!-- ============ SOL ALAN: FORM GİRDİLERİ (8 Kolon) ============ -->
+        <div class="lg:col-span-7 xl:col-span-8 bg-card border border-line rounded-2xl p-6 sm:p-8 shadow-xs">
+            <div class="flex items-center gap-3 pb-5 mb-6 border-b border-line/60">
+                <div class="w-9 h-9 rounded-xl bg-brand-50 text-brand-700 grid place-items-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="font-display text-lg font-bold text-ink">Kullanıcı Bilgileri</h2>
+                    <p class="text-xs text-ink-soft">Lütfen zorunlu alanları eksiksiz doldurunuz.</p>
+                </div>
+            </div>
+
+            <!-- Genel Hata Bildirim Kutusu -->
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="mb-6 rounded-xl border border-bad/30 bg-bad/5 p-4 text-sm text-bad flex items-start gap-3">
+                    <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <div>
+                        <h4 class="font-semibold text-bad mb-1">Kayıt sırasında bir hata oluştu:</h4>
+                        <div asp-validation-summary="All" class="text-xs space-y-0.5"></div>
+                    </div>
+                </div>
+            }
+
+            <!-- Form: AddUserDto ile eşleşen alanlar ve profil görseli desteği (multipart/form-data) -->
+            <form method="post" action="/UserManagment/AddUser" enctype="multipart/form-data" class="space-y-6">
+
+                <!-- 1. Ad ve Soyad (2 Kolon) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div class="space-y-1.5">
+                        <label for="FirstName" class="block text-xs font-semibold text-ink uppercase tracking-wider">
+                            Ad <span class="text-bad">*</span>
+                        </label>
+                        <input type="text" 
+                               id="FirstName" 
+                               name="FirstName" 
+                               value="@(Model?.FirstName)"
+                               x-model="firstName"
+                               required 
+                               placeholder="Örn: Ahmet" 
+                               class="input py-2.5 text-sm font-medium text-ink placeholder:text-ink-soft/40">
+                        <span asp-validation-for="FirstName" class="text-xs text-bad block font-medium mt-1"></span>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="LastName" class="block text-xs font-semibold text-ink uppercase tracking-wider">
+                            Soyad <span class="text-bad">*</span>
+                        </label>
+                        <input type="text" 
+                               id="LastName" 
+                               name="LastName" 
+                               value="@(Model?.LastName)"
+                               x-model="lastName"
+                               required 
+                               placeholder="Örn: Yılmaz" 
+                               class="input py-2.5 text-sm font-medium text-ink placeholder:text-ink-soft/40">
+                        <span asp-validation-for="LastName" class="text-xs text-bad block font-medium mt-1"></span>
+                    </div>
+                </div>
+
+                <!-- 2. Kullanıcı Adı ve E-Posta (2 Kolon) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div class="space-y-1.5">
+                        <label for="UserName" class="block text-xs font-semibold text-ink uppercase tracking-wider">
+                            Kullanıcı Adı <span class="text-bad">*</span>
+                        </label>
+                        <div class="flex items-stretch rounded-xl border border-line bg-card focus-within:ring-2 focus-within:ring-brand-500/30 focus-within:border-brand-500 transition-all overflow-hidden shadow-2xs">
+                            <span class="inline-flex items-center justify-center px-3.5 bg-brand-50/90 text-brand-700 font-mono font-bold text-sm border-r border-line select-none shrink-0">
+                                @@
+                            </span>
+                            <input type="text" 
+                                   id="UserName" 
+                                   name="UserName" 
+                                   value="@(Model?.UserName)"
+                                   x-model="username"
+                                   required 
+                                   placeholder="ahmetyilmaz" 
+                                   class="w-full bg-transparent px-3.5 py-2.5 text-sm font-medium text-ink placeholder:text-ink-soft/40 border-none outline-none focus:outline-none focus:ring-0">
+                        </div>
+                        <span asp-validation-for="UserName" class="text-xs text-bad block font-medium mt-1"></span>
+                        <p class="text-[11px] text-ink-soft">Giriş yaparken kullanılacak benzersiz takma ad.</p>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="Email" class="block text-xs font-semibold text-ink uppercase tracking-wider">
+                            E-Posta Adresi <span class="text-bad">*</span>
+                        </label>
+                        <div class="flex items-stretch rounded-xl border border-line bg-card focus-within:ring-2 focus-within:ring-brand-500/30 focus-within:border-brand-500 transition-all overflow-hidden shadow-2xs">
+                            <span class="inline-flex items-center justify-center px-3.5 bg-brand-50/90 text-brand-700 border-r border-line select-none shrink-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                    <polyline points="22,6 12,13 2,6"/>
+                                </svg>
+                            </span>
+                            <input type="email" 
+                                   id="Email" 
+                                   name="Email" 
+                                   value="@(Model?.Email)"
+                                   x-model="email"
+                                   required 
+                                   placeholder="ahmet@dinakafe.com" 
+                                   class="w-full bg-transparent px-3.5 py-2.5 text-sm font-medium text-ink placeholder:text-ink-soft/40 border-none outline-none focus:outline-none focus:ring-0">
+                        </div>
+                        <span asp-validation-for="Email" class="text-xs text-bad block font-medium mt-1"></span>
+                        <p class="text-[11px] text-ink-soft">Bildirimler ve şifre sıfırlama için kullanılır.</p>
+                    </div>
+                </div>
+
+                <!-- 3. Profil Görseli (Image - IFormFile) -->
+                <div class="space-y-1.5">
+                    <label for="Image" class="block text-xs font-semibold text-ink uppercase tracking-wider">
+                        Profil Fotoğrafı
+                    </label>
+
+                    <div class="relative">
+                        <label for="Image" 
+                               @@dragover.prevent="isDragging = true"
+                               @@dragleave.prevent="isDragging = false"
+                               @@drop.prevent="isDragging = false; handleDrop($event)"
+                               :class="isDragging ? 'border-brand-500 bg-brand-50/70 ring-2 ring-brand-500/20' : 'border-line bg-paper/40 hover:bg-brand-50/50 hover:border-brand-500/60'"
+                               class="flex flex-col items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-xl cursor-pointer transition-all text-center group">
+                            
+                            <div class="w-10 h-10 rounded-full bg-brand-50 group-hover:bg-brand-100 text-brand-700 grid place-items-center mb-2 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            
+                            <span class="text-xs font-semibold text-ink" x-text="fileName ? fileName : 'Profil resmi seçmek için tıklayın veya sürükleyin'"></span>
+                            <span class="text-[11px] text-ink-soft mt-1">PNG, JPG, WEBP (Seçilmezse baş harfler kullanılır)</span>
+
+                            <input type="file" 
+                                   id="Image" 
+                                   name="Image" 
+                                   accept="image/*"
+                                   @@change="handleFile($event)"
+                                   class="sr-only">
+                        </label>
+                    </div>
+                    <span asp-validation-for="Image" class="text-xs text-bad block font-medium mt-1"></span>
+                </div>
+
+                <!-- 4. Şifre ve Şifre Onayı (2 Kolon) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">
+                    <!-- Şifre -->
+                    <div class="space-y-1.5">
+                        <label for="Password" class="block text-xs font-semibold text-ink uppercase tracking-wider">
+                            Şifre <span class="text-bad">*</span>
+                        </label>
+                        <div class="relative flex items-center">
+                            <input :type="showPassword ? 'text' : 'password'" 
+                                   id="Password" 
+                                   name="Password" 
+                                   x-model="password"
+                                   required 
+                                   placeholder="••••••••" 
+                                   class="input pr-10 py-2.5 text-sm font-medium text-ink">
+                            <button type="button"
+                                    @@click="showPassword = !showPassword"
+                                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-ink-soft hover:text-ink cursor-pointer focus:outline-none"
+                                    tabindex="-1">
+                                <svg x-show="!showPassword" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg x-show="showPassword" x-cloak class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="text-xs text-bad block font-medium mt-1"></span>
+                        <p class="text-[11px] text-ink-soft">En az 6 karakter, harf ve rakam içermelidir.</p>
+                    </div>
+
+                    <!-- Şifre Tekrarı -->
+                    <div class="space-y-1.5">
+                        <label for="ConfirmPassword" class="block text-xs font-semibold text-ink uppercase tracking-wider">
+                            Şifre Tekrarı <span class="text-bad">*</span>
+                        </label>
+                        <div class="relative flex items-center">
+                            <input :type="showConfirmPassword ? 'text' : 'password'" 
+                                   id="ConfirmPassword" 
+                                   name="ConfirmPassword" 
+                                   x-model="confirmPassword"
+                                   required 
+                                   placeholder="••••••••" 
+                                   class="input pr-10 py-2.5 text-sm font-medium text-ink">
+                            <button type="button"
+                                    @@click="showConfirmPassword = !showConfirmPassword"
+                                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-ink-soft hover:text-ink cursor-pointer focus:outline-none"
+                                    tabindex="-1">
+                                <svg x-show="!showConfirmPassword" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg x-show="showConfirmPassword" x-cloak class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <span asp-validation-for="ConfirmPassword" class="text-xs text-bad block font-medium mt-1"></span>
+                        <!-- Şifre Eşleşme Bildirimi -->
+                        <template x-if="confirmPassword && password !== confirmPassword">
+                            <p class="text-[11px] text-bad font-medium">Şifreler birbiriyle eşleşmiyor.</p>
+                        </template>
+                        <template x-if="confirmPassword && password === confirmPassword">
+                            <p class="text-[11px] text-ok font-medium flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>Şifreler eşleşti.</span>
+                            </p>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Form Butonları -->
+                <div class="pt-6 border-t border-line flex items-center justify-end gap-3">
+                    <a href="/UserManagment/Index" class="btn btn-ghost px-5 text-xs">
+                        Vazgeç
+                    </a>
+                    <button type="submit" class="btn btn-primary px-6 text-xs shadow-xs">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                            <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>Kullanıcıyı Kaydet</span>
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- ============ SAĞ ALAN: CANLI ÖNİZLEME KARTI (4-5 Kolon) ============ -->
+        <div class="lg:col-span-5 xl:col-span-4 space-y-6">
+
+            <!-- Önizleme Başlığı -->
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-ink-soft uppercase tracking-wider">
+                    Canlı Profil Önizlemesi
+                </span>
+                <span class="text-[11px] font-semibold text-brand-700 bg-brand-100 px-2 py-0.5 rounded-full">
+                    Anlık Önizleme
+                </span>
+            </div>
+
+            <!-- Canlı Önizleme Kartı (Personel / Kullanıcı Kimlik Kartı) -->
+            <div class="bg-card border border-line rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <!-- Üst Desen / Banner -->
+                <div class="h-28 bg-gradient-to-r from-brand-600 via-brand-500 to-amber-700 relative">
+                    <div class="absolute inset-0 opacity-15 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:12px_12px]"></div>
+                    <div class="absolute top-3 right-3">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/90 text-ink backdrop-blur-xs shadow-xs">
+                            <span class="w-1.5 h-1.5 rounded-full bg-ok"></span>
+                            <span>Yeni Kayıt</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Avatar ve Profil Bilgileri -->
+                <div class="px-6 pb-6 pt-0 text-center relative">
+                    <!-- Avatar Alanı -->
+                    <div class="-mt-14 inline-block relative">
+                        <template x-if="image">
+                            <img :src="image" 
+                                 :alt="fullName" 
+                                 class="w-24 h-24 rounded-full object-cover border-4 border-card shadow-md mx-auto">
+                        </template>
+                        <template x-if="!image">
+                            <div class="w-24 h-24 rounded-full bg-brand-100 text-brand-700 border-4 border-card shadow-md mx-auto grid place-items-center font-display font-bold text-2xl"
+                                 x-text="initials">
+                            </div>
+                        </template>
+                        <span class="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-ok border-2 border-card" title="Durum: Aktif"></span>
+                    </div>
+
+                    <!-- İsim ve Kullanıcı Adı -->
+                    <h3 class="font-display text-xl font-bold text-ink mt-3" x-text="fullName"></h3>
+                    <p class="text-xs font-mono text-brand-700 font-semibold mt-0.5" 
+                       x-text="username ? '@@' + username : '@@kullaniciadi'"></p>
+
+                    <!-- Rozet -->
+                    <div class="mt-3">
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-brand-50 text-ink border border-line">
+                            <svg class="w-3.5 h-3.5 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                            <span>Sistem Kullanıcısı</span>
+                        </span>
+                    </div>
+
+                    <!-- Bilgi Satırları -->
+                    <div class="mt-6 pt-5 border-t border-line/70 space-y-3 text-left">
+                        <!-- E-Posta -->
+                        <div class="flex items-center gap-3 text-xs">
+                            <div class="w-7 h-7 rounded-lg bg-brand-50 text-brand-700 grid place-items-center shrink-0">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                    <polyline points="22,6 12,13 2,6"/>
+                                </svg>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <span class="text-[10px] uppercase font-semibold text-ink-soft block">E-Posta</span>
+                                <span class="text-xs text-ink font-medium truncate block" 
+                                      x-text="email ? email : 'eposta@dinakafe.com'"></span>
+                            </div>
+                        </div>
+
+                        <!-- Şifre Durumu -->
+                        <div class="flex items-center gap-3 text-xs">
+                            <div class="w-7 h-7 rounded-lg bg-brand-50 text-brand-700 grid place-items-center shrink-0">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                </svg>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <span class="text-[10px] uppercase font-semibold text-ink-soft block">Şifre Durumu</span>
+                                <span class="text-xs font-medium" 
+                                      :class="password ? 'text-ok font-semibold' : 'text-ink-soft italic'"
+                                      x-text="password ? 'Şifre Belirlendi' : 'Şifre Bekleniyor'"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kart Alt Bilgisi -->
+                <div class="px-6 py-3.5 bg-paper/60 border-t border-line/60 flex items-center justify-between text-xs text-ink-soft">
+                    <span>Dina Kafe Yönetim</span>
+                    <span class="font-semibold text-brand-700">#YeniPersonel</span>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

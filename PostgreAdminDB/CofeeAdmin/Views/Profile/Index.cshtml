@@ -1,0 +1,95 @@
+@model CofeeAdmin.Dto.AppUser.MyProfileDto
+
+@{
+    ViewData["Title"] = "Profilim";
+    Layout = "_Layout";
+    var imageUrl = !string.IsNullOrWhiteSpace(Model.ProfileImageURL)
+        ? $"/Image/Get?url={Uri.EscapeDataString(Model.ProfileImageURL)}"
+        : null;
+    var initials = $"{Model.FirstName.FirstOrDefault()} {Model.LastName.FirstOrDefault()}".Replace(" ", "");
+}
+
+<div class="max-w-5xl mx-auto space-y-6">
+    <div>
+        <p class="text-sm font-semibold uppercase tracking-[.18em] text-brand-700">Hesap</p>
+        <h2 class="font-display text-3xl font-bold text-ink mt-1">Profilim</h2>
+        <p class="text-sm text-ink-soft mt-2">Kişisel bilgilerinizi ve profil fotoğrafınızı buradan güncelleyebilirsiniz.</p>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="rounded-xl border border-ok/25 bg-ok/10 px-4 py-3 text-sm font-semibold text-ok" role="status">@TempData["SuccessMessage"]</div>
+    }
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="rounded-xl border border-bad/25 bg-bad/5 px-4 py-3 text-sm text-bad" asp-validation-summary="All"></div>
+    }
+
+    <form method="post" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+        @Html.AntiForgeryToken()
+        <section class="bg-card border border-line rounded-2xl p-6 shadow-xs flex flex-col items-center text-center">
+            @if (imageUrl != null)
+            {
+                <img src="@imageUrl" alt="Profil fotoğrafı" class="w-32 h-32 rounded-full object-cover border-4 border-brand-50 shadow-sm" />
+            }
+            else
+            {
+                <div class="w-32 h-32 rounded-full bg-brand-100 text-brand-700 grid place-items-center font-display text-4xl font-bold border-4 border-brand-50">@(string.IsNullOrWhiteSpace(initials) ? "A" : initials)</div>
+            }
+            <h3 class="font-display text-xl font-bold text-ink mt-4">@Model.FirstName @Model.LastName</h3>
+            <p class="text-sm text-ink-soft">@@@Model.UserName</p>
+            <label for="Image" class="btn btn-ghost mt-6 cursor-pointer">Fotoğraf seç</label>
+            <input id="Image" name="Image" type="file" accept=".jpg,.jpeg,.png,.webp" class="sr-only" />
+            <span asp-validation-for="Image" class="text-xs text-bad mt-2"></span>
+            <p id="fileName" class="text-xs text-ink-soft mt-2">Yeni fotoğraf seçmezsen mevcut fotoğrafın korunur.</p>
+        </section>
+
+        <section class="bg-card border border-line rounded-2xl p-6 sm:p-8 shadow-xs">
+            <div class="flex items-center gap-3 pb-5 mb-6 border-b border-line/70">
+                <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-700 grid place-items-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div>
+                    <h3 class="font-display text-lg font-bold text-ink">Kişisel bilgiler</h3>
+                    <p class="text-xs text-ink-soft">Değişiklikleri kaydettiğinizde hesabınıza uygulanır.</p>
+                </div>
+            </div>
+
+            <input type="hidden" name="ProfileImageURL" value="@Model.ProfileImageURL" />
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label asp-for="FirstName" class="block text-xs font-semibold uppercase tracking-wider text-ink-soft mb-2">Ad</label>
+                    <input asp-for="FirstName" class="input" autocomplete="given-name" />
+                    <span asp-validation-for="FirstName" class="text-xs text-bad mt-1 block"></span>
+                </div>
+                <div>
+                    <label asp-for="LastName" class="block text-xs font-semibold uppercase tracking-wider text-ink-soft mb-2">Soyad</label>
+                    <input asp-for="LastName" class="input" autocomplete="family-name" />
+                    <span asp-validation-for="LastName" class="text-xs text-bad mt-1 block"></span>
+                </div>
+                <div>
+                    <label asp-for="UserName" class="block text-xs font-semibold uppercase tracking-wider text-ink-soft mb-2">Kullanıcı adı</label>
+                    <input asp-for="UserName" class="input" autocomplete="username" />
+                    <span asp-validation-for="UserName" class="text-xs text-bad mt-1 block"></span>
+                </div>
+                <div>
+                    <label asp-for="Email" class="block text-xs font-semibold uppercase tracking-wider text-ink-soft mb-2">E-posta</label>
+                    <input asp-for="Email" class="input" autocomplete="email" />
+                    <span asp-validation-for="Email" class="text-xs text-bad mt-1 block"></span>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-5 border-t border-line/70 flex justify-end">
+                <button type="submit" class="btn btn-primary">Değişiklikleri kaydet</button>
+            </div>
+        </section>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('Image')?.addEventListener('change', function () {
+            document.getElementById('fileName').textContent = this.files?.[0]?.name || 'Yeni fotoğraf seçmezsen mevcut fotoğrafın korunur.';
+        });
+    </script>
+}

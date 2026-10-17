@@ -1,0 +1,92 @@
+@using X.PagedList
+@model IPagedList<Reviews>
+
+@if (Model.Any())
+{
+    foreach (var review in Model)
+    {
+        var isDeleted = review.DeletedAt != null;
+        var starCount = Math.Clamp((int)Math.Round(review.Score), 0, 5);
+
+        <tr data-review-row data-review-id="@review.EntityID" class="hover:bg-brand-50/40 transition-colors @(isDeleted ? "bg-warn/5" : "")">
+            <td class="px-5 py-4 font-mono text-xs text-ink-soft">#@review.EntityID</td>
+            <td class="px-5 py-4">
+                <span class="font-display font-semibold text-ink">@(review.Product?.ProductName ?? "Ürün bulunamadı")</span>
+            </td>
+            <td class="px-5 py-4">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-full bg-brand-100 text-brand-700 grid place-items-center text-xs font-bold">@(!string.IsNullOrEmpty(review.FirstName) ? review.FirstName.Substring(0, 1) : "?")@(!string.IsNullOrEmpty(review.LastName) ? review.LastName.Substring(0, 1) : "")</span>
+                    <span class="font-medium text-ink">@review.FirstName @review.LastName</span>
+                </div>
+            </td>
+            <td class="px-5 py-4 max-w-sm">
+                <p data-review-comment class="text-xs text-ink-soft leading-relaxed">@review.Comment</p>
+            </td>
+            <td class="px-5 py-4 text-center">
+                <div class="inline-flex flex-col items-center gap-0.5">
+                    <span class="text-brand-500 tracking-widest text-sm" aria-label="5 üzerinden @review.Score yıldız">@(new string('★', starCount))@(new string('☆', 5 - starCount))</span>
+                    <span class="text-xs font-semibold text-ink">@review.Score.ToString("0.0", new System.Globalization.CultureInfo("tr-TR")) <span class="font-normal text-ink-soft">/ 5</span></span>
+                </div>
+            </td>
+            <td class="px-5 py-4 text-xs text-ink-soft whitespace-nowrap">@review.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+            <td class="px-5 py-4 text-center">
+                @if (isDeleted)
+                {
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-warn/15 px-3 py-1 text-xs font-medium text-warn"><span class="h-1.5 w-1.5 rounded-full bg-warn"></span>Silinmiş</span>
+                }
+                else
+                {
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-ok/15 px-3 py-1 text-xs font-medium text-ok"><span class="h-1.5 w-1.5 rounded-full bg-ok"></span>Aktif</span>
+                }
+            </td>
+            <td class="px-5 py-4 text-right relative" x-data="{ open: false, dropUp: false }" :class="open ? 'z-50' : 'z-0'" @@click.outside="open = false">
+                <div class="relative inline-block text-left">
+                    <button type="button"
+                            @@click="const rect = $el.getBoundingClientRect(); dropUp = (window.innerHeight - rect.bottom) < 150; open = !open;"
+                            :class="open ? 'bg-brand-100 text-brand-700 border-brand-300 ring-2 ring-brand-200' : 'text-ink-soft hover:text-ink bg-card hover:bg-brand-50 border-line'"
+                            class="w-9 h-9 rounded-lg border transition-all cursor-pointer shadow-xs inline-flex items-center justify-center"
+                            title="İşlemler" aria-label="Yorum #@review.EntityID işlemleri">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/>
+                        </svg>
+                    </button>
+                    <div x-cloak x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100"
+                         :class="dropUp ? 'bottom-full mb-1.5 origin-bottom-right' : 'top-full mt-1.5 origin-top-right'"
+                         class="absolute right-0 w-48 bg-card border border-line rounded-xl shadow-xl py-1 z-50 opacity-100">
+                        <button type="button" @@click="navigator.clipboard.writeText($el.closest('tr').querySelector('[data-review-comment]').textContent.trim()); open = false;"
+                                class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-ink-soft hover:text-brand-700 hover:bg-brand-50 transition-colors text-left">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3" stroke-linecap="round"/></svg>
+                            <span>Yorumu Kopyala</span>
+                        </button>
+                        @if (!isDeleted)
+                        {
+                            <button type="button" @@click="open = false; window.softDeleteReview(@review.EntityID);"
+                                    class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-warn hover:bg-warn/10 transition-colors text-left">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-.9 14H5.9L5 6m4 4v6m6-6v6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <span>Sil</span>
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" @@click="open = false; window.restoreReview(@review.EntityID);"
+                                    class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-ok hover:bg-ok/10 transition-colors text-left">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.64-6.36L3 8m0-5v5h5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <span>Geri Getir</span>
+                            </button>
+                        }
+                        <button type="button" @@click="open = false; window.hardDeleteReview(@review.EntityID);"
+                                class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-bad hover:bg-bad/10 transition-colors text-left">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-.9 14H5.9L5 6m4 4v6m6-6v6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <span>Kalıcı Sil</span>
+                        </button>
+                    </div>
+            </td>
+        </tr>
+    }
+}
+else
+{
+    <tr>
+        <td colspan="8" class="px-5 py-10 text-center text-sm text-ink-soft">Aramanızla eşleşen yorum bulunamadı.</td>
+    </tr>
+}

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en-US">
+@await Html.PartialAsync("~/Views/PartialView/HeadPartialView.cshtml")
+<body class="body-header1">
+	@await Html.PartialAsync("~/Views/PartialView/MobileNavbarPartialView.cshtml")
+
+	@await Html.PartialAsync("~/Views/PartialView/NavbarPartialView.cshtml")
+
+	@RenderBody()
+	@await Html.PartialAsync("~/Views/PartialView/FooterPartialView.cshtml")
+	@await Html.PartialAsync("~/Views/PartialView/ScriptPartialView.cshtml")
+
+	@await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

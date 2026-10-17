@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+
+
+    @await Html.PartialAsync("/Views/PartialView/HeadPartialView.cshtml")
+
+<body x-data="adminApp()" x-init="init()" class="min-h-screen">
+
+    <!-- Mobil menü perdesi -->
+    <div x-cloak x-show="menuOpen" @@click ="menuOpen=false; sessionStorage.removeItem('adminSidebarOpen')" class="fixed inset-0 z-30 bg-ink/50 lg:hidden"></div>
+
+    <!-- ============ SOL MENÜ ============ -->
+    @await Component.InvokeAsync("_SidebarPartialComponent")
+
+    <!-- ============ ANA ALAN ============ -->
+    <div class="lg:pl-64 min-h-screen flex flex-col">
+
+        <!-- Üst bar -->
+        @await Component.InvokeAsync("_NavbarPartialComponent")
+
+        <main class="flex-1 px-4 sm:px-8 py-8">
+
+@RenderBody()
+
+        </main>
+    </div>
+
+    @await Html.PartialAsync("/Views/PartialView/ScriptPartialView.cshtml")
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

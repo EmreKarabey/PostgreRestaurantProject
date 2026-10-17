@@ -1,0 +1,92 @@
+@using EntityLayer.Entities
+@model List<AppUser>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="py-8 text-center">
+        <div class="w-12 h-12 rounded-full bg-brand-50 text-brand-600 grid place-items-center mx-auto mb-3">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+        </div>
+        <p class="text-sm font-semibold text-ink">Bu Role Atanmış Kullanıcı Bulunmuyor</p>
+        <p class="text-xs text-ink-soft mt-1">Henüz bu yetki grubuna sahip kayıtlı bir kullanıcı veya personel bulunmamaktadır.</p>
+    </div>
+}
+else
+{
+    <!-- Bilgilendirme Rozeti -->
+    <div class="p-3 rounded-xl bg-brand-50/50 border border-brand-200/60 flex items-center justify-between text-xs text-ink-soft mb-3">
+        <span class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-ok"></span>
+            <span>Toplam <strong>@Model.Count kullanıcı</strong> bu role atanmış</span>
+        </span>
+        <span class="text-[11px] font-mono text-brand-700 bg-card px-2 py-0.5 rounded border border-line">
+            Identity Veritabanı
+        </span>
+    </div>
+
+    <!-- Kullanıcı Kartları -->
+    <div class="space-y-2.5">
+        @foreach (var item in Model)
+        {
+            var first = !string.IsNullOrWhiteSpace(item.FirstName) ? item.FirstName.Substring(0, 1).ToUpper() : "";
+            var last = !string.IsNullOrWhiteSpace(item.LastName) ? item.LastName.Substring(0, 1).ToUpper() : "";
+            var initials = $"{first}{last}";
+            if (string.IsNullOrWhiteSpace(initials))
+            {
+                initials = !string.IsNullOrWhiteSpace(item.UserName) ? item.UserName.Substring(0, 1).ToUpper() : "U";
+            }
+
+            var fullName = $"{item.FirstName} {item.LastName}".Trim();
+            if (string.IsNullOrWhiteSpace(fullName))
+            {
+                fullName = item.UserName ?? "İsimsiz Kullanıcı";
+            }
+
+            <div class="flex items-center justify-between p-3.5 rounded-xl border border-line bg-card hover:bg-brand-50/40 transition-colors">
+                <div class="flex items-center gap-3">
+                    <!-- Profil Resmi / Baş Harfler -->
+                    @if (!string.IsNullOrWhiteSpace(item.ProfileImageURL))
+                    {
+                        <img src="/Image/Get?url=@Uri.EscapeDataString(item.ProfileImageURL)"
+                             alt="@fullName"
+                             class="w-9 h-9 rounded-full object-cover border border-line shrink-0"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="w-9 h-9 rounded-full bg-brand-100 text-brand-700 font-display font-bold text-xs border border-brand-200 hidden items-center justify-center shrink-0">
+                            @initials
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="w-9 h-9 rounded-full bg-brand-100 text-brand-700 font-display font-bold text-xs border border-brand-200 flex items-center justify-center shrink-0">
+                            @initials
+                        </div>
+                    }
+
+                    <!-- İsim & Kullanıcı Bilgisi -->
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-display font-semibold text-sm text-ink">@fullName</span>
+                            @if (!string.IsNullOrWhiteSpace(item.UserName))
+                            {
+                                <span class="text-xs font-mono text-ink-soft">@@@item.UserName</span>
+                            }
+                        </div>
+                        <span class="text-xs text-ink-soft">@(item.Email ?? "E-posta tanımlı değil")</span>
+                    </div>
+                </div>
+
+                <!-- Aksiyon / Rozet -->
+                <a href="/UserManagment/UpdateUser/@item.Id"
+                   class="text-xs font-medium text-brand-700 hover:text-brand-800 bg-brand-50 hover:bg-brand-100/70 border border-brand-200 px-2.5 py-1 rounded-lg transition-colors inline-flex items-center gap-1 shrink-0"
+                   title="Kullanıcı Profilini Aç">
+                    <span>Profili Gör</span>
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+            </div>
+        }
+    </div>
+}

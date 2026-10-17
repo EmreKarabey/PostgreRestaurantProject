@@ -1,0 +1,83 @@
+@model PostgreDB.Dto.RegisterDto
+
+@{
+    ViewData["Title"] = "Hesap Oluştur";
+    Layout = "_Layout";
+}
+
+<section class="topSingleBkg topPageBkg">
+    <div class="item-content-bkg">
+        <div class="item-img" style="background-image:url('@Url.Content("~/image/restaurant4.jpg")');"></div>
+        <div class="inner-desc">
+            <h1 class="post-title single-post-title">Hesap Oluştur</h1>
+            <span class="post-subtitle">Dina Restoranı’na katılın, rezervasyonlarınızı kolayca takip edin.</span>
+        </div>
+    </div>
+</section>
+
+<main class="login-page">
+    <section class="login-card" aria-labelledby="register-title">
+        <span class="home-subtitle">Dina Restoranı</span>
+        <h2 id="register-title">Yeni Hesap Oluştur</h2>
+        <p class="login-description">Hesabınızı oluşturmak için bilgilerinizi doldurun.</p>
+
+        <form asp-controller="Login" asp-action="Register" method="post" enctype="multipart/form-data" class="login-form" autocomplete="on">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @if (TempData["ErrorMessage"] is string errorMessage)
+            {
+                <div class="text-danger" role="alert">@errorMessage</div>
+            }
+
+            <div class="login-field">
+                <label asp-for="FirstName">Ad</label>
+                <input asp-for="FirstName" autocomplete="given-name" placeholder="Adınız" required />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+
+            <div class="login-field">
+                <label asp-for="LastName">Soyad</label>
+                <input asp-for="LastName" autocomplete="family-name" placeholder="Soyadınız" required />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+
+            <div class="login-field">
+                <label asp-for="Image">Profil Fotoğrafı</label>
+                <input asp-for="Image" class="register-file-input" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" aria-describedby="register-image-help" required />
+                <small id="register-image-help" class="register-file-help">JPG, PNG veya WEBP formatında profil fotoğrafı seçin.</small>
+                <span asp-validation-for="Image" class="text-danger"></span>
+            </div>
+
+            <div class="login-field">
+                <label asp-for="Email">E-posta</label>
+                <input asp-for="Email" type="email" autocomplete="email" placeholder="ornek@mail.com" required />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="login-field">
+                <label asp-for="UserName">Kullanıcı Adı</label>
+                <input asp-for="UserName" autocomplete="username" placeholder="Kullanıcı adınız" required />
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+
+            <div class="login-field">
+                <label asp-for="Password">Şifre</label>
+                <input asp-for="Password" type="password" autocomplete="new-password" placeholder="En az 6 karakter" required />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="login-field">
+                <label asp-for="ConfirmPassword">Şifre Tekrarı</label>
+                <input asp-for="ConfirmPassword" type="password" autocomplete="new-password" placeholder="Şifrenizi tekrar girin" required />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <button class="login-submit" type="submit">Hesap Oluştur</button>
+        </form>
+
+        <p class="login-register-link">Zaten hesabınız var mı? <a asp-controller="Login" asp-action="Index">Giriş yapın</a></p>
+    </section>
+</main>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

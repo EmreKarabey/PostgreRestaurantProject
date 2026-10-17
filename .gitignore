@@ -1,0 +1,66 @@
+## Visual Studio and IDEs
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userprefs
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+*.pidb
+*.ide
+*.rsuser
+
+## Build Outputs
+**/[Bb]in/
+**/[Oo]bj/
+**/[Aa]rtifacts/
+**/[Pp]ublish/
+[Bb]in/
+[Oo]bj/
+[Aa]rtifacts/
+[Pp]ublish/
+TestResults/
+**/TestResults/**
+[Bb]uild[Ll]og.*
+
+## NuGet & Generated Files
+*.nupkg
+*.snupkg
+**/packages/*
+project.lock.json
+project.fragment.lock.json
+Generated Files/
+
+## Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+**/secrets.json
+**/appsettings.Local.json
+**/appsettings.*.local.json
+**/appsettings.Development.json
+*.pfx
+*.p12
+*.key
+*.pem
+
+## Logs & Temporary Files
+*.log
+*.tmp
+*.temp
+*.cache
+
+## Local Databases & Backups
+*.db
+*.sqlite
+*.sqlite3
+*.bak
+*.dump
+
+## Operating System Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini

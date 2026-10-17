@@ -1,0 +1,38 @@
+@model System.Collections.Generic.IReadOnlyList<EntityLayer.Entities.RestaurantTable>
+@{
+    var selectedTable = ViewBag.SelectedTable as int?;
+}
+
+<div class="qr-floor-wrap">
+    <div class="qr-floor-canvas" role="group" aria-label="Restoran krokisinden masa seçin">
+        <div class="qr-floor-window">CAM / MANZARA</div>
+        <div class="qr-floor-counter"><span aria-hidden="true">♨</span> MUTFAK VE BAR SERVİS ALANI</div>
+        <div class="qr-floor-door"><i></i> GİRİŞ / ÇIKIŞ KAPISI</div>
+
+        @foreach (var table in Model)
+        {
+            var isSelected = selectedTable == table.TableNumber;
+            var shapeClass = table.Shape == "square" ? "qr-shape-square" : "qr-shape-round";
+            <button type="button"
+                    class="qr-map-table @shapeClass @(isSelected ? "is-selected" : "")"
+                    data-table-number="@table.TableNumber"
+                    aria-pressed="@isSelected.ToString().ToLowerInvariant()"
+                    aria-label="Masa @table.TableNumber, @table.Capacity kişilik"
+                    style="left:@((table.PositionX * 100).ToString(System.Globalization.CultureInfo.InvariantCulture))%;top:@((table.PositionY * 100).ToString(System.Globalization.CultureInfo.InvariantCulture))%;--qr-table-rotation:@(table.Rotation)deg">
+                <span class="qr-map-seat seat-top"></span><span class="qr-map-seat seat-right"></span>
+                <span class="qr-map-seat seat-bottom"></span><span class="qr-map-seat seat-left"></span>
+                <span class="qr-map-surface"><strong>M@(table.TableNumber)</strong><small>@table.Capacity Kişi</small></span>
+            </button>
+        }
+
+        @if (Model.Count == 0)
+        {
+            <div class="qr-floor-empty">Aktif masa bulunamadı. Önce masa düzenine masa ekleyin.</div>
+        }
+    </div>
+    <div class="qr-floor-legend">
+        <span><i class="qr-legend-table"></i> Restoran masası</span>
+        <span><i class="qr-legend-selected"></i> QR oluşturulacak masa</span>
+        <span class="qr-floor-hint">Masaya tıklayarak QR için seçin</span>
+    </div>
+</div>

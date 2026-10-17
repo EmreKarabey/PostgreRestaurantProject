@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dina Yönetim Paneli</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+<!-- ============ TASARIM TOKEN'LARI ============
+     Dina temasının renklerine uymak için SADECE bu bloğu değiştirmen yeterli. -->
+<style type="text/tailwindcss">
+@theme {
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --color-brand-50:  #fbf4e4;
+  --color-brand-100: #f4e3b8;
+  --color-brand-500: #c28a2c;   /* ana vurgu (safran/amber) */
+  --color-brand-600: #a67219;
+  --color-brand-700: #835813;
+  --color-ink:       #2a1e17;   /* koyu espresso: menü, başlıklar */
+  --color-ink-soft:  #6b5b4e;
+  --color-paper:     #faf6ee;   /* sayfa zemini */
+  --color-card:      #fffdf9;
+  --color-line:      #e9dfcf;
+  --color-ok:        #4f6b3a;
+  --color-warn:      #b8631f;
+  --color-bad:       #9a3232;
+}
+[x-cloak]{display:none!important}
+@layer base{ body{font-family:var(--font-sans);background:var(--color-paper);color:var(--color-ink)} }
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.55rem 1rem;border-radius:.5rem;font-weight:600;font-size:.875rem;transition:background .15s}
+.btn-primary{background:var(--color-brand-500);color:#fff}.btn-primary:hover{background:var(--color-brand-600)}
+.btn-ghost{border:1px solid var(--color-line);background:var(--color-card)}.btn-ghost:hover{background:var(--color-brand-50)}
+.input{width:100%;padding:.55rem .75rem;border:1px solid var(--color-line);border-radius:.5rem;background:#fff;font-size:.875rem}
+.input:focus{outline:2px solid var(--color-brand-500);outline-offset:0;border-color:transparent}
+:focus-visible{outline:2px solid var(--color-brand-500);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+
+<body x-data="adminApp()" x-init="init()" class="min-h-screen">
+
+<!-- Mobil menü perdesi -->
+<div x-cloak x-show="menuOpen" @click="menuOpen=false" class="fixed inset-0 z-30 bg-ink/50 lg:hidden"></div>
+
+<!-- ============ SOL MENÜ ============ -->
+<aside class="fixed inset-y-0 left-0 z-40 w-64 bg-ink text-brand-50 flex flex-col transition-transform lg:translate-x-0"
+       :class="menuOpen ? 'translate-x-0' : '-translate-x-full'">
+  <div class="px-6 py-6 border-b border-white/10">
+    <div class="font-display text-2xl font-bold tracking-tight">Dina</div>
+    <div class="text-xs text-brand-100/70 mt-0.5">Kafe &amp; Restoran Yönetimi</div>
+  </div>
+  <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto" aria-label="Ana menü">
+    <template x-for="item in nav" :key="item.id">
+      <button @click="go(item.id)"
+              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-left transition-colors"
+              :class="page===item.id ? 'bg-brand-500 text-white' : 'text-brand-100/80 hover:bg-white/10'">
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" x-html="item.icon"></svg>
+        <span x-text="item.label"></span>
+        <span x-show="item.id==='orders' && stats.pendingOrders" x-text="stats.pendingOrders"
+              class="ml-auto text-xs bg-white/15 rounded-full px-2 py-0.5"></span>
+      </button>
+    </template>
+  </nav>
+  <div class="px-6 py-4 border-t border-white/10 text-xs text-brand-100/60">
+    API: <span x-text="useMock ? 'Demo verisi' : apiBase"></span>
+  </div>
+</aside>
+
+<!-- ============ ANA ALAN ============ -->
+<div class="lg:pl-64 min-h-screen flex flex-col">
+
+  <!-- Üst bar -->
+  <header class="sticky top-0 z-20 bg-paper/90 backdrop-blur border-b border-line">
+    <div class="flex items-center gap-4 px-4 sm:px-8 h-16">
+      <button class="lg:hidden p-2 -ml-2 rounded-lg hover:bg-brand-50" @click="menuOpen=true" aria-label="Menüyü aç">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/></svg>
+      </button>
+      <h1 class="font-display text-xl font-semibold" x-text="currentTitle"></h1>
+      <div class="ml-auto flex items-center gap-3">
+        <span class="hidden sm:block text-sm text-ink-soft" x-text="today"></span>
+        <div class="relative" @click.outside="userMenu=false">
+          <button @click="userMenu=!userMenu" class="flex items-center gap-2 rounded-full pl-1 pr-3 py-1 hover:bg-brand-50" aria-haspopup="true">
+            <span class="w-8 h-8 rounded-full bg-brand-500 text-white grid place-items-center text-sm font-semibold">Y</span>
+            <span class="text-sm font-medium hidden sm:block">Yönetici</span>
+          </button>
+          <div x-cloak x-show="userMenu" x-transition class="absolute right-0 mt-2 w-48 bg-card border border-line rounded-lg shadow-lg py-1 text-sm">
+            <a href="#" class="block px-4 py-2 hover:bg-brand-50">Profilim</a>
+            <a href="#" class="block px-4 py-2 hover:bg-brand-50">Restoran ayarları</a>
+            <hr class="my-1 border-line">
+            <a href="#" class="block px-4 py-2 text-bad hover:bg-brand-50">Çıkış yap</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 px-4 sm:px-8 py-8">
+
+    <!-- ============ DASHBOARD ============ -->
+    <section x-show="page==='dashboard'" class="space-y-8">
+
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 class="font-display text-3xl font-bold">Hoş geldin</h2>
+          <p class="text-ink-soft mt-1">Bugün mutfakta ve kasada neler olduğuna göz at.</p>
+        </div>
+        <button class="btn btn-ghost" @click="loadDashboard()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Yenile
+        </button>
+      </div>
+
+      <!-- Hata -->
+      <div x-cloak x-show="error" class="rounded-lg border border-bad/30 bg-bad/5 text-bad px-4 py-3 text-sm">
+        <span x-text="error"></span> Demo verisi gösteriliyor.
+      </div>
+
+      <!-- İstatistik kartları -->
+      <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        <article class="rounded-xl bg-ink text-brand-50 p-6 sm:col-span-2 xl:col-span-1">
+          <p class="text-sm text-brand-100/80">Günlük ciro</p>
+          <p class="font-display text-4xl font-bold mt-2" x-text="money(stats.todayRevenue)"></p>
+          <p class="text-sm mt-3" :class="stats.revenueChange>=0 ? 'text-brand-100' : 'text-red-300'">
+            Dünkü ciroya göre
+            <strong x-text="(stats.revenueChange>=0?'+':'')+stats.revenueChange+'%'"></strong>
+          </p>
+        </article>
+        <article class="rounded-xl bg-card border border-line p-6">
+          <p class="text-sm text-ink-soft">Bekleyen siparişler</p>
+          <p class="font-display text-4xl font-bold mt-2" x-text="stats.pendingOrders"></p>
+          <button @click="go('orders')" class="text-sm font-semibold text-brand-700 hover:underline mt-3">Siparişlere git</button>
+        </article>
+        <article class="rounded-xl bg-card border border-line p-6">
+          <p class="text-sm text-ink-soft">Aktif menü öğeleri</p>
+          <p class="font-display text-4xl font-bold mt-2" x-text="stats.activeProducts"></p>
+          <p class="text-sm text-ink-soft mt-3"><span x-text="stats.totalProducts"></span> ürün içinden</p>
+        </article>
+      </div>
+
+      <div class="grid gap-5 xl:grid-cols-3">
+        <!-- Haftalık ciro grafiği (saf CSS) -->
+        <article class="xl:col-span-2 rounded-xl bg-card border border-line p-6">
+          <h3 class="font-display text-lg font-semibold">Son 7 günün cirosu</h3>
+          <div class="mt-6 flex items-end gap-3 h-52">
+            <template x-for="d in weekly" :key="d.day">
+              <div class="flex-1 flex flex-col items-center justify-end gap-2 h-full group">
+                <span class="text-xs text-ink-soft opacity-0 group-hover:opacity-100 transition-opacity" x-text="money(d.value)"></span>
+                <div class="w-full rounded-t-md bg-brand-500/80 group-hover:bg-brand-600 transition-colors"
+                     :style="`height:${Math.max(4, d.value/maxWeekly*100)}%`"></div>
+                <span class="text-xs font-medium" x-text="d.day"></span>
+              </div>
+            </template>
+          </div>
+        </article>
+
+        <!-- Çok satanlar -->
+        <article class="rounded-xl bg-card border border-line p-6">
+          <h3 class="font-display text-lg font-semibold">Bugün çok satanlar</h3>
+          <ul class="mt-4 divide-y divide-line">
+            <template x-for="p in topProducts" :key="p.name">
+              <li class="py-3 flex items-center justify-between text-sm">
+                <span class="font-medium" x-text="p.name"></span>
+                <span class="text-ink-soft" x-text="p.count+' adet'"></span>
+              </li>
+            </template>
+          </ul>
+        </article>
+      </div>
+
+      <!-- Son siparişler -->
+      <article class="rounded-xl bg-card border border-line overflow-hidden">
+        <div class="px-6 py-4 border-b border-line flex items-center justify-between">
+          <h3 class="font-display text-lg font-semibold">Son siparişler</h3>
+          <button @click="go('orders')" class="text-sm font-semibold text-brand-700 hover:underline">Tümünü gör</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="text-left text-ink-soft bg-brand-50/60">
+              <tr><th class="px-6 py-3 font-medium">Sipariş</th><th class="px-6 py-3 font-medium">Masa</th><th class="px-6 py-3 font-medium">Tutar</th><th class="px-6 py-3 font-medium">Saat</th><th class="px-6 py-3 font-medium">Durum</th></tr>
+            </thead>
+            <tbody class="divide-y divide-line">
+              <template x-for="o in recentOrders" :key="o.id">
+                <tr class="hover:bg-brand-50/40">
+                  <td class="px-6 py-3 font-medium" x-text="'#'+o.id"></td>
+                  <td class="px-6 py-3" x-text="o.table"></td>
+                  <td class="px-6 py-3" x-text="money(o.total)"></td>
+                  <td class="px-6 py-3 text-ink-soft" x-text="o.time"></td>
+                  <td class="px-6 py-3">
+                    <span class="inline-block rounded-full px-2.5 py-1 text-xs font-semibold"
+                          :class="statusStyle[o.status].cls" x-text="statusStyle[o.status].label"></span>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <!-- ============ DİĞER SAYFALAR (sonraki adımlarda doldurulacak) ============ -->
+    <template x-for="p in nav.filter(n => n.id!=='dashboard')" :key="p.id">
+      <section x-cloak x-show="page===p.id" class="rounded-xl border border-dashed border-line bg-card p-12 text-center">
+        <h2 class="font-display text-2xl font-semibold" x-text="p.label"></h2>
+        <p class="text-ink-soft mt-2">Bu sayfa bir sonraki adımda eklenecek.</p>
+      </section>
+    </template>
+
+  </main>
+</div>
+
+<script>
+function adminApp() {
+  return {
+    /* ===== API AYARLARI =====
+       .NET 9 API'n hazır olunca useMock=false yap, apiBase'i kendi adresinle değiştir.
+       Beklenen uçlar:
+         GET {apiBase}/dashboard/summary  -> { todayRevenue, revenueChange, pendingOrders, activeProducts, totalProducts,
+                                               weekly:[{day,value}], topProducts:[{name,count}],
+                                               recentOrders:[{id,table,total,time,status}] }
+         status değerleri: "new" | "preparing" | "done"                                                   */
+    useMock: true,
+    apiBase: 'https://localhost:5001/api',
+    async api(path, opts = {}) {
+      const res = await fetch(this.apiBase + path, {
+        headers: { 'Content-Type': 'application/json' }, ...opts
+      });
+      if (!res.ok) throw new Error(`API hatası (${res.status})`);
+      return res.status === 204 ? null : res.json();
+    },
+
+    /* ===== DURUM ===== */
+    page: 'dashboard', menuOpen: false, userMenu: false, error: '',
+    today: new Date().toLocaleDateString('tr-TR', { weekday:'long', day:'numeric', month:'long' }),
+    stats: { todayRevenue:0, revenueChange:0, pendingOrders:0, activeProducts:0, totalProducts:0 },
+    weekly: [], topProducts: [], recentOrders: [],
+    statusStyle: {
+      new:       { label:'Yeni',        cls:'bg-brand-100 text-brand-700' },
+      preparing: { label:'Hazırlanıyor', cls:'bg-warn/15 text-warn' },
+      done:      { label:'Tamamlandı',  cls:'bg-ok/15 text-ok' }
+    },
+    nav: [
+      { id:'dashboard',  label:'Dashboard',        icon:'<path d="M4 13h6V4H4zM14 20h6v-9h-6zM14 8h6V4h-6zM4 20h6v-4H4z"/>' },
+      { id:'categories', label:'Kategoriler',      icon:'<path d="M4 6h16M4 12h16M4 18h10"/>' },
+      { id:'products',   label:'Ürünler / Menü',   icon:'<path d="M6 3v8a3 3 0 0 0 3 3v7M9 3v6M12 3v8a3 3 0 0 1-3 3M18 3c-2 2-3 5-3 8h3v10"/>' },
+      { id:'orders',     label:'Aktif Siparişler', icon:'<path d="M9 5h10v14H5V5h2M9 3h6v4H9zM8 12h8M8 16h5"/>' }
+    ],
+
+    get currentTitle() { return this.nav.find(n => n.id === this.page).label; },
+    get maxWeekly() { return Math.max(1, ...this.weekly.map(d => d.value)); },
+    money(v) { return new Intl.NumberFormat('tr-TR', { style:'currency', currency:'TRY', maximumFractionDigits:0 }).format(v || 0); },
+    go(id) { this.page = id; this.menuOpen = false; window.scrollTo({ top:0 }); },
+
+    init() { this.loadDashboard(); },
+
+    async loadDashboard() {
+      this.error = '';
+      let d;
+      if (!this.useMock) {
+        try { d = await this.api('/dashboard/summary'); }
+        catch (e) { this.error = 'Sunucuya ulaşılamadı: ' + e.message + '.'; }
+      }
+      d = d || this.mockDashboard();
+      const { weekly, topProducts, recentOrders, ...stats } = d;
+      this.stats = stats; this.weekly = weekly; this.topProducts = topProducts; this.recentOrders = recentOrders;
+    },
+
+    mockDashboard() {
+      return {
+        todayRevenue: 18450, revenueChange: 12, pendingOrders: 7, activeProducts: 42, totalProducts: 48,
+        weekly: [['Pzt',11200],['Sal',12850],['Çar',10400],['Per',14300],['Cum',19800],['Cmt',24100],['Paz',18450]].map(([day,value]) => ({day,value})),
+        topProducts: [{name:'Türk Kahvesi',count:38},{name:'Karışık Pizza',count:24},{name:'Tiramisu',count:19},{name:'Limonata',count:17},{name:'Mercimek Çorbası',count:15}],
+        recentOrders: [
+          {id:1048,table:'Masa 4', total:420, time:'14:32',status:'new'},
+          {id:1047,table:'Masa 9', total:865, time:'14:25',status:'preparing'},
+          {id:1046,table:'Paket',  total:310, time:'14:18',status:'preparing'},
+          {id:1045,table:'Masa 2', total:195, time:'14:02',status:'done'},
+          {id:1044,table:'Masa 7', total:1240,time:'13:48',status:'done'}
+        ]
+      };
+    }
+  };
+}
+</script>
+</body>
+</html>

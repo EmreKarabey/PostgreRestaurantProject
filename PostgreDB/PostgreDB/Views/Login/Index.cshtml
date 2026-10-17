@@ -1,0 +1,46 @@
+@model Application.Features.Login.Command.Login.LoginCommand
+
+@{
+    ViewData["Title"] = "Giriş Yap";
+    Layout = "_Layout";
+}
+
+<section class="topSingleBkg topPageBkg">
+    <div class="item-content-bkg">
+        <div class="item-img" style="background-image:url('@Url.Content("~/image/restaurant4.jpg")');"></div>
+        <div class="inner-desc">
+            <h1 class="post-title single-post-title">Giriş Yap</h1>
+            <span class="post-subtitle">Rezervasyonlarınızı görüntülemek için hesabınıza giriş yapın.</span>
+        </div>
+    </div>
+</section>
+
+<main class="login-page">
+    <section class="login-card" aria-labelledby="login-title">
+        <span class="home-subtitle">Dina Restoranı</span>
+        <h2 id="login-title">Tekrar Hoş Geldiniz</h2>
+        <p class="login-description">Devam etmek için e-posta adresinizi ve şifrenizi girin.</p>
+
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="alert alert-success" role="alert">@successMessage</div>
+        }
+
+        <form asp-controller="Login" asp-action="Index" method="post" class="login-form">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="login-field">
+                <label asp-for="EmailorUserName">E-posta veya kullanıcı adı</label>
+                <input asp-for="EmailorUserName" type="text" autocomplete="username" placeholder="E-posta veya kullanıcı adınız" required />
+            </div>
+
+            <div class="login-field">
+                <label asp-for="Password">Şifre</label>
+                <input asp-for="Password" type="password" autocomplete="current-password" placeholder="Şifrenizi girin" required />
+            </div>
+
+            <button class="login-submit" type="submit">Giriş Yap</button>
+        </form>
+
+        <p class="login-register-link">Hesabınız yok mu? <a asp-controller="Login" asp-action="Register">Kayıt olun</a></p>
+    </section>
+</main>

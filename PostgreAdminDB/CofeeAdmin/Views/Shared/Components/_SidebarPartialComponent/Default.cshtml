@@ -1,0 +1,159 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+}
+
+<aside class="fixed inset-y-0 left-0 z-40 w-64 bg-ink text-brand-50 flex flex-col max-lg:-translate-x-full lg:translate-x-0 max-lg:transition-transform"
+       :class="menuOpen ? 'translate-x-0' : ''"
+       @@click="if (window.matchMedia('(max-width: 1023px)').matches && $event.target.closest('a[href]')) sessionStorage.setItem('adminSidebarOpen', 'true')">
+
+    <!-- Logo & Marka Başlığı -->
+    <div class="px-6 py-6 border-b border-white/10 flex items-center justify-between">
+        <div>
+            <div class="font-display text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <span>Dina</span>
+                <span class="text-[10px] font-sans font-semibold px-2 py-0.5 rounded bg-brand-500 text-white tracking-normal">Kafe</span>
+            </div>
+            <div class="text-xs text-brand-100/70 mt-0.5">Kafe &amp; Restoran Yönetimi</div>
+        </div>
+
+        <!-- Mobil Menü Kapatma Butonu -->
+        <button class="lg:hidden p-1.5 rounded-lg text-brand-100/70 hover:text-white hover:bg-white/10" 
+                @@click="menuOpen = false; sessionStorage.removeItem('adminSidebarOpen')" 
+                aria-label="Menüyü Kapat">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Menü Linkleri -->
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto no-scrollbar" style="scrollbar-width: none; -ms-overflow-style: none;" aria-label="Ana menü">
+
+        <!-- Başlık: Genel -->
+        <div class="px-3 pt-1 pb-1 text-[11px] font-semibold text-brand-100/40 uppercase tracking-wider">
+            Genel
+        </div>
+
+        <!-- Dashboard -->
+        <a href="/Dashboard/Index" 
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors @(currentController == "Home" || currentController == "Dashboard" || string.IsNullOrEmpty(currentController) ? "bg-brand-500 text-white shadow-xs" : "text-brand-100/80 hover:bg-white/10 hover:text-white")">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M4 13h6V4H4zM14 20h6v-9h-6zM14 8h6V4h-6zM4 20h6v-4H4z"/>
+            </svg>
+            <span>Dashboard</span>
+        </a>
+
+        <!-- Başlık: Menü Yönetimi -->
+        <div class="px-3 pt-3 pb-1 text-[11px] font-semibold text-brand-100/40 uppercase tracking-wider">
+            Menü Yönetimi
+        </div>
+
+        <!-- Kategoriler -->
+        <a href="/Category/Index" 
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors @(currentController == "Category" ? "bg-brand-500 text-white shadow-xs" : "text-brand-100/80 hover:bg-white/10 hover:text-white")">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M4 6h16M4 12h16M4 18h10" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Kategoriler</span>
+            <span class="ml-auto text-[11px] font-semibold px-2 py-0.5 rounded-full @(currentController == "Category" ? "bg-white/20 text-white" : "bg-white/10 text-brand-100/80")">
+                @(ViewBag.CategoryCount ?? 0)
+            </span>
+        </a>
+
+        <!-- Ürünler -->
+        <a href="/Product/Index" 
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors @(currentController == "Product" ? "bg-brand-500 text-white shadow-xs" : "text-brand-100/80 hover:bg-white/10 hover:text-white")">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/>
+            </svg>
+            <span>Ürünler</span>
+            <span class="ml-auto text-[11px] font-semibold px-2 py-0.5 rounded-full @(currentController == "Product" ? "bg-white/20 text-white" : "bg-white/10 text-brand-100/80")">
+                @(ViewBag.ProductCount ?? 0)
+            </span>
+        </a>
+
+        <!-- Ürün Yorumları -->
+        <a href="/Reviews/Index"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors @(currentController == "Reviews" ? "bg-brand-500 text-white shadow-xs" : "text-brand-100/80 hover:bg-white/10 hover:text-white")">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m12 3 2.7 5.47 6.03.88-4.36 4.25 1.03 6.01L12 16.77l-5.4 2.84 1.03-6.01-4.36-4.25 6.03-.88L12 3z" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Ürün Yorumları</span>
+        </a>
+
+        <!-- Başlık: Operasyon -->
+        <div class="px-3 pt-3 pb-1 text-[11px] font-semibold text-brand-100/40 uppercase tracking-wider">
+            Operasyon
+        </div>
+
+        <!-- Rezervasyonlar -->
+        <a href="/Reservation/Index" 
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors @(currentController == "Reservation" ? "bg-brand-500 text-white shadow-xs" : "text-brand-100/80 hover:bg-white/10 hover:text-white")">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Rezervasyonlar</span>
+            <span class="ml-auto text-[11px] font-semibold px-2 py-0.5 rounded-full @(currentController == "Reservation" ? "bg-white/20 text-white" : "bg-white/10 text-brand-100/80")">
+                @(ViewBag.ReservationCount ?? 0)
+            </span>
+        </a>
+
+
+
+        <!-- Masalar -->
+        <a href="/RestaurantTable/Index" 
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors @(currentController == "RestaurantTable" ? "bg-brand-500 text-white shadow-xs" : "text-brand-100/80 hover:bg-white/10 hover:text-white")">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="12" rx="2" stroke-linecap="round"/>
+                <path d="M7 16v4M17 16v4" stroke-linecap="round"/>
+            </svg>
+            <span>Masa Düzeni</span>
+        </a>
+
+        <a href="/QrCode/Index"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors @(currentController == "QrCode" ? "bg-brand-500 text-white shadow-xs" : "text-brand-100/80 hover:bg-white/10 hover:text-white")">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+                <path d="M14 14h3v3h-3zm4 4h3v3h-3zm0-4h3m-3 3v4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Masa QR Kodları</span>
+        </a>
+
+        <!-- Başlık: Sistem -->
+        <div class="px-3 pt-3 pb-1 text-[11px] font-semibold text-brand-100/40 uppercase tracking-wider">
+            Sistem
+        </div>
+
+        <!-- Kullanıcı Yönetimi -->
+        <a href="/UserManagment/Index" 
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors @(currentController == "UserManagment" ? "bg-brand-500 text-white shadow-xs" : "text-brand-100/80 hover:bg-white/10 hover:text-white")">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <span>Kullanıcı Yönetimi</span>
+        </a>
+
+        <!-- Rol Yönetimi -->
+        <a href="/Role/Index" 
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors @(currentController == "Role" ? "bg-brand-500 text-white shadow-xs" : "text-brand-100/80 hover:bg-white/10 hover:text-white")">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+            <span>Rol Yönetimi</span>
+        </a>
+
+    </nav>
+
+    <!-- Alt Bilgi / Sistem Durumu -->
+    <div class="px-6 py-4 border-t border-white/10 text-xs text-brand-100/70 flex items-center justify-between">
+        <span class="font-medium">Dina v1.0</span>
+        <span class="inline-flex items-center gap-1.5 text-ok text-[11px] font-semibold">
+            <span class="w-1.5 h-1.5 rounded-full bg-ok animate-pulse"></span>
+            Aktif
+        </span>
+    </div>
+</aside>

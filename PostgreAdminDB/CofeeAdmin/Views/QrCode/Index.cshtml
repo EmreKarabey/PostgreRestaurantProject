@@ -1,0 +1,171 @@
+@{
+    ViewData["Title"] = "Masa QR Kodları";
+    var qrCode = ViewBag.QrCode as string;
+    var qrValue = ViewBag.QrValue as string;
+    var selectedTable = ViewBag.TableNumber as int?;
+}
+
+<link rel="stylesheet" href="~/css/qr-code.css" asp-append-version="true" />
+
+<main class="qr-page">
+    <header class="qr-page-heading">
+        <div>
+            <p class="qr-breadcrumb">Yönetim paneli <span>/</span> Operasyon <span>/</span> Masa QR Kodları</p>
+            <h1>Masa QR Kodları</h1>
+            <p class="qr-page-subtitle">Her masa için ayrı QR kod oluşturun. QR okutulduğunda seçilen masa rezervasyon sayfasına aktarılır.</p>
+        </div>
+        <span class="qr-heading-badge"><span></span> QR yönetimi</span>
+    </header>
+
+    <section class="qr-info-strip" aria-label="QR kod kullanım bilgisi">
+        <span class="qr-info-icon" aria-hidden="true">i</span>
+        <p>Masa seçin ve rezervasyon sayfası adresini girin. Seçilen masa numarası QR bağlantısına eklenir.</p>
+    </section>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="qr-validation">@Html.ValidationSummary()</div>
+    }
+
+    <div class="qr-workspace">
+        <section class="qr-card qr-table-card" aria-labelledby="qr-table-title">
+            <div class="qr-card-heading">
+                <div class="qr-heading-number">01</div>
+                <div>
+                    <h2 id="qr-table-title">Masa seçin</h2>
+                    <p>QR kodu seçtiğiniz masaya özel oluşturulur.</p>
+                </div>
+                <span class="qr-step-tag">Masa</span>
+            </div>
+
+            @await Component.InvokeAsync("RestaurantTableQrSelector", new { selectedTable })
+
+            <label class="qr-field-label" for="reservation-url">Rezervasyon sayfası adresi</label>
+            <div class="qr-url-field">
+                <span aria-hidden="true">↗</span>
+                <input id="reservation-url" type="url" value="https://localhost:7185/Reservation/Index" placeholder="https://siteadresiniz.com/Reservation/Index" autocomplete="url" />
+            </div>
+            <p class="qr-field-help">Seçilen masanın numarası bağlantının sonuna otomatik eklenir. Yayında localhost yerine sitenizin adresini girin.</p>
+
+            <form asp-controller="QrCode" asp-action="Index" method="post" id="qr-generate-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="qr-value" name="value" value="@qrValue" />
+                <input type="hidden" id="qr-table-number" name="tableNumber" value="@selectedTable" />
+                <button class="qr-generate-button" type="submit">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM19 14h2m-7 4v3m4-3h3v3h-3z" /></svg>
+                    QR kodu oluştur
+                </button>
+            </form>
+        </section>
+
+        <aside class="qr-card qr-preview-card" aria-labelledby="qr-preview-title">
+            <div class="qr-card-heading">
+                <div class="qr-heading-number">02</div>
+                <div>
+                    <h2 id="qr-preview-title">QR önizlemesi</h2>
+                    <p>Oluşturulan kodu buradan görüntüleyin.</p>
+                </div>
+            </div>
+
+            <div class="qr-preview-stage">
+                @if (!string.IsNullOrWhiteSpace(qrCode))
+                {
+                    <div class="qr-image-frame">
+                        <img src="@qrCode" alt="Oluşturulan QR kod" />
+                    </div>
+                    <span class="qr-preview-status"><i></i> Masa @selectedTable için hazır</span>
+                }
+                else
+                {
+                    <div class="qr-placeholder" aria-hidden="true">
+                        <div class="qr-placeholder-pattern">
+                            <span class="finder finder-one"></span><span class="finder finder-two"></span><span class="finder finder-three"></span>
+                            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                        </div>
+                    </div>
+                    <strong class="qr-placeholder-title">Henüz QR kod oluşturulmadı</strong>
+                    <span class="qr-placeholder-copy">Masa seçip “QR kodu oluştur” düğmesine basın.</span>
+                }
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(qrCode))
+            {
+                <a class="qr-download-button" href="@qrCode" download="rezervasyon-qr.png">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v4h14v-4" /></svg>
+                    QR görselini indir
+                </a>
+                <div class="qr-result-url"><span>QR içeriği</span><code>@qrValue</code></div>
+            }
+            else
+            {
+                <div class="qr-preview-footnote"><span>✓</span> QR kodu PNG görseli olarak indirilebilir.</div>
+            }
+        </aside>
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        (() => {
+            const urlInput = document.getElementById("reservation-url");
+            const valueInput = document.getElementById("qr-value");
+            const tableInput = document.getElementById("qr-table-number");
+            const form = document.getElementById("qr-generate-form");
+            const grid = document.querySelector(".qr-floor-canvas");
+            let selected = Number(tableInput.value) || 1;
+
+            if (valueInput.value) urlInput.value = valueInput.value;
+
+            const initiallySelectedTable = grid.querySelector(".qr-map-table.is-selected");
+            if (!tableInput.value && initiallySelectedTable) {
+                selected = Number(initiallySelectedTable.dataset.tableNumber);
+                tableInput.value = selected;
+            }
+
+            function addSelectedTableToUrl() {
+                try {
+                    const target = new URL(urlInput.value.trim());
+                    target.searchParams.set("tableNumber", selected);
+                    urlInput.value = target.toString();
+                    valueInput.value = target.toString();
+                    return true;
+                } catch {
+                    return false;
+                }
+            }
+
+            addSelectedTableToUrl();
+
+            grid.addEventListener("click", event => {
+                const option = event.target.closest(".qr-map-table[data-table-number]");
+                if (!option) return;
+
+                selected = Number(option.dataset.tableNumber);
+                tableInput.value = selected;
+                grid.querySelectorAll(".qr-map-table[data-table-number]").forEach(button => {
+                    const isSelected = Number(button.dataset.tableNumber) === selected;
+                    button.classList.toggle("is-selected", isSelected);
+                    button.setAttribute("aria-pressed", String(isSelected));
+                });
+                addSelectedTableToUrl();
+            });
+
+            urlInput.addEventListener("change", addSelectedTableToUrl);
+
+            form.addEventListener("submit", event => {
+                if (!selected || !tableInput.value) {
+                    event.preventDefault();
+                    alert("Önce krokiden bir masa seçin.");
+                    return;
+                }
+
+                if (!addSelectedTableToUrl()) {
+                    event.preventDefault();
+                    urlInput.setCustomValidity("Geçerli bir web adresi girin.");
+                    urlInput.reportValidity();
+                    urlInput.addEventListener("input", () => urlInput.setCustomValidity(""), { once: true });
+                }
+            });
+        })();
+    </script>
+}

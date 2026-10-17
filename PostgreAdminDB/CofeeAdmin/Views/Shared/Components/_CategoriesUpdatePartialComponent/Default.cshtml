@@ -1,0 +1,45 @@
+@using EntityLayer.Entities
+@model IEnumerable<Category>
+
+@{
+    var selectedId = ViewBag.SelectedCategoryId as int?;
+}
+
+<div class="space-y-1.5">
+    <label for="CategoryId" class="block text-xs font-semibold text-ink uppercase tracking-wider">
+        Kategori <span class="text-bad">*</span>
+    </label>
+    <div class="relative">
+        <select id="CategoryId"
+                name="CategoryId"
+                required
+                @@change="updateCategory($event)"
+                class="input py-2.5 text-sm font-medium text-ink bg-card cursor-pointer">
+            @if (selectedId == null || selectedId == 0)
+            {
+                <option value="" disabled selected>Kategori Seçiniz</option>
+            }
+            else
+            {
+                <option value="" disabled>Kategori Seçiniz</option>
+            }
+
+            @if (Model != null)
+            {
+                foreach (var cat in Model)
+                {
+                    if (selectedId.HasValue && selectedId.Value == cat.EntityID)
+                    {
+                        <option value="@cat.EntityID" selected="selected">@cat.CategoryName</option>
+                    }
+                    else
+                    {
+                        <option value="@cat.EntityID">@cat.CategoryName</option>
+                    }
+                }
+            }
+        </select>
+    </div>
+    @Html.ValidationMessage("CategoryId", "", new { @class = "text-xs text-bad block font-medium mt-1" })
+    <p class="text-[11px] text-ink-soft">Ürünün listeleneceği menü grubu.</p>
+</div>

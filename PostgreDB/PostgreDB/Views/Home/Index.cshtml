@@ -1,0 +1,163 @@
+﻿@{
+	ViewData["Title"] = "Ana Sayfa";
+	Layout = "_Layout";
+}
+
+<div class="slider-container">
+	<div class="owl-carousel owl-theme home-slider">
+		<div class="slider-post slider-item-box-bkg">
+			<div class="slider-img" style="background-image:url('@Url.Content("~/image/optimized/restaurant5.jpg")');"></div>
+			<div class="slider-caption">
+				<div class="slider-text">
+					<h1>Hoş Geldiniz</h1>
+					<p>Dünyanın dört bir yanından seçkin lezzetleri keşfedin.</p>
+					<p><a href="/Reservation/Index" class="view-more more-white">Masa Ayırtın</a></p>
+				</div>
+			</div>
+		</div>
+		<div class="slider-post slider-item-box-bkg">
+			<div class="slider-img" data-background-image="@Url.Content("~/image/optimized/restaurant2.jpg")"></div>
+			<div class="slider-caption">
+				<div class="slider-text">
+					<h1>Hoş Geldiniz</h1>
+					<p>En kaliteli yerel ürünlerle hazırlanan geleneksel lezzetler.</p>
+					<p><a href="/Reservation/Index" class="view-more more-white">Masa Ayırtın</a></p>
+				</div>
+			</div>
+		</div>
+		<div class="slider-post slider-item-box-bkg">
+			<div class="slider-img" data-background-image="@Url.Content("~/image/optimized/restaurant3.jpg")"></div>
+			<div class="slider-caption">
+				<div class="slider-text">
+					<h1>Hoş Geldiniz</h1>
+					<p>Lezzetlerimizi keşfetmek için sizi de bekliyoruz.</p>
+					<p><a href="/Reservation/Index" class="view-more more-white">Masa Ayırtın</a></p>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<section id="home-content-1" class="home-widget home-features">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-4">
+				<div class="small-feature">
+					<div class="small-feature-icon"><img src="~/dina-html/images/icons/groceries.png" loading="lazy" alt="groceries" width="48" height="48" class="" /></div>
+					<div class="small-feature-desc">
+						<h5>Daima Taze</h5>
+						<p>Her gün özenle seçilen taze ve kaliteli malzemeler.</p>
+					</div>
+				</div>
+			</div>
+			<!--.col-md-4-->
+			<div class="col-md-4">
+				<div class="small-feature">
+					<div class="small-feature-icon"><img src="~/dina-html/images/icons/food.png" loading="lazy" alt="groceries" width="48" height="48" class="" /></div>
+					<div class="small-feature-desc">
+						<h5>Şefin Seçimi</h5>
+						<p>Şefimizin özgün dokunuşlarıyla hazırlanan özel tarifler.</p>
+					</div>
+				</div>
+			</div>
+			<!--.col-md-4-->
+			<div class="col-md-4">
+				<div class="small-feature">
+					<div class="small-feature-icon"><img src="~/dina-html/images/icons/glass.png" loading="lazy" alt="groceries" width="48" height="48" class="" /></div>
+					<div class="small-feature-desc">
+						<h5>Seçkin İçecekler</h5>
+						<p>Lezzetli yemeklerinize eşlik edecek özenle seçilmiş içecekler.</p>
+					</div>
+				</div>
+			</div>
+			<!--.col-md-4-->
+		</div>
+		<!--.row-->
+	</div>
+	<!--.container-->
+</section>
+
+<section id="home-content-2" class="home-widget">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-6">
+				<h2 class="home-subtitle">Hikâyemiz</h2>
+				<h1 class="home-title margin-b24 title-headline">Hakkımızda</h1>
+				<div class="title-style-1">Dina'ya hoş geldiniz. Özenle seçilmiş lezzetleri modern bir yorumla sunuyoruz.</div>
+				<p>Mutfağımızda taze ve mevsiminde ürünleri özenle seçiyor, her tarifi lezzetini ön plana çıkaracak şekilde hazırlıyoruz. Geleneksel tatlardan ilham alırken özgün dokunuşlarla her tabağa kendine has bir karakter katıyoruz.</p>
+				<p>Günün her anına eşlik eden seçeneklerimizle iş yemeklerinden sevdiklerinizle paylaşacağınız keyifli akşam sofralarına kadar sizi ağırlıyoruz. Dina'da iyi yemeği sıcak bir ortam ve özenli servisle buluşturuyor, her ziyaretinizin güzel bir anıya dönüşmesini amaçlıyoruz.</p>
+			</div>
+			<!-- /col-md-6 -->
+			<div class="col-md-6 home-about-image-wrap">
+				<img class="img-fluid img-feature home-about-image" src="~/image/optimized/restaurant6.jpg" loading="lazy" decoding="async" alt="Dina Restaurant'ta özenle hazırlanmış masa" />
+			</div>
+			<!-- /col-md-6 -->
+		</div>
+		<!-- /row-->
+	</div>
+	<!-- /container-->
+</section>
+
+<section id="home-content-4" class="home-widget home-menu-section">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12 alignc">
+				<h2 class="home-subtitle">Keşfedin</h2>
+				<h1 class="home-title margin-b24 title-headline">Menümüz</h1>
+				<p>Mevsimin en özel lezzetlerini menümüzde keşfedin. Tüm malzemeler şeflerimiz tarafından taze ve özenle seçilir. Keyifli bir yemek deneyiminin tadını çıkarın.</p>
+
+				@await Component.InvokeAsync("_MenuPartialComponent")
+
+				<a asp-controller="Menu" asp-action="Index" class="view-more margin-t36">Menüyü Görüntüle</a>
+			</div>
+			<!--.col-md-12-->
+		</div>
+		<!--.row-->
+	</div>
+	<!--.container-->
+</section>
+
+<section id="home-experience" class="home-widget">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="row">
+					<div class="col-md-6 d-flex align-items-center">
+						<img class="img-fluid" src="~/image/optimized/restaurant4.jpg" loading="lazy" decoding="async" alt="restaurant4" />
+					</div>
+					<!--.col-md-6-->
+					<div class="col-md-6 padding-tb54 alignr">
+						<h2 class="home-subtitle">Dina'da Lezzet</h2>
+						<h1 class="home-title title-headline margin-b24">Her Tabakta Özen</h1>
+						<div class="title-style-1">Taze malzemeler ve özenli hazırlıkla, her lokmada farkı hissedin.</div>
+						<p>Menümüzdeki her lezzeti, mevsiminde seçilen kaliteli malzemelerle ve şeflerimizin özgün dokunuşlarıyla hazırlıyoruz. İster güne güzel bir kahvaltıyla başlayın ister sevdiklerinizle keyifli bir akşam yemeğinin tadını çıkarın.</p>
+						<p>Sıcacık kahvelerimizden mutfağımızdan çıkan özel tariflere kadar her ayrıntıyı, size unutulmaz bir deneyim sunmak için düşünüyoruz. Dina'da kendinize güzel bir mola verin.</p>
+					</div>
+					<!--.col-md-6-->
+				</div>
+				<!-- row -->
+			</div>
+			<!--.col-md-12-->
+		</div>
+		<!--.row-->
+	</div>
+	<!--.container-->
+</section>
+
+<section class="home-widget home-visit-section">
+	<div class="home-simple-content">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12 alignc">
+					<h2 class="home-subtitle">Bizi Ziyaret Edin</h2>
+					<h1 class="home-title title-headline margin-b24">Lezzetli Yemekler ve İçecekler</h1>
+					<p>Özenle hazırlanan yemeklerimizi ve seçkin içeceklerimizi keşfedin.<br />Sizi Dina'da keyifli bir sofraya bekliyoruz.</p>
+				</div>
+				<!--.col-md-12-->
+			</div>
+			<!--.row-->
+		</div>
+		<!--.container-->
+	</div>
+	<!-- parallax-content -->
+</section>

@@ -1,0 +1,350 @@
+@using X.PagedList
+@model IPagedList<Reviews>
+
+@{
+    ViewData["Title"] = "Ürün Yorumları";
+    Layout = "_Layout";
+
+    var reviews = Model;
+    var averageScore = reviews.Any() ? reviews.Average(review => review.Score) : 0;
+    var productCount = reviews.Select(review => review.ProductId).Distinct().Count();
+    var fiveStarCount = reviews.Count(review => review.Score == 5);
+}
+
+<div class="space-y-8">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-2 border-b border-line/70">
+        <div>
+            <div class="flex items-center gap-3">
+                <h1 class="font-display text-3xl font-bold tracking-tight text-ink">Ürün Yorumları</h1>
+                <span data-review-total-badge class="text-xs font-sans font-semibold px-2.5 py-1 rounded-full bg-brand-100 text-brand-700">@reviews.TotalItemCount Kayıt</span>
+            </div>
+            <p class="text-sm text-ink-soft mt-1">Ürünlere yapılan puanları ve müşteri yorumlarını buradan inceleyebilirsiniz.</p>
+        </div>
+        <a href="/Reviews/Index" class="btn btn-ghost text-xs" title="Sayfayı Yenile">
+            <svg class="w-4 h-4 text-ink-soft" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <span>Yenile</span>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+        <div class="bg-card border border-line rounded-xl p-5 shadow-xs">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-ink-soft">Toplam Yorum</span>
+                <span class="w-8 h-8 rounded-lg bg-brand-50 text-brand-700 grid place-items-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2"><span id="review-total-stat" class="font-display text-3xl font-bold text-ink">@reviews.TotalItemCount</span><span class="text-xs text-ink-soft">yorum</span></div>
+            <div class="mt-2 text-xs text-ink-soft">Veritabanındaki toplam yorum</div>
+        </div>
+
+        <div class="bg-card border border-line rounded-xl p-5 shadow-xs">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-ink-soft">Ortalama Puan</span>
+                <span class="w-8 h-8 rounded-lg bg-brand-50 text-brand-700 grid place-items-center text-lg">★</span>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2"><span id="review-average-stat" class="font-display text-3xl font-bold text-ink">@averageScore.ToString("0.0", new System.Globalization.CultureInfo("tr-TR"))</span><span class="text-xs text-ink-soft">/ 5</span></div>
+            <div class="mt-2 text-xs text-brand-600 tracking-widest">★★★★★</div>
+        </div>
+
+        <div class="bg-card border border-line rounded-xl p-5 shadow-xs">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-ink-soft">Listelenen Ürün</span>
+                <span class="w-8 h-8 rounded-lg bg-brand-50 text-brand-700 grid place-items-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 7h18v13H3zM7 7V4h10v3M7 11h10M7 15h6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2"><span id="review-product-stat" class="font-display text-3xl font-bold text-brand-700">@productCount</span><span class="text-xs text-ink-soft">ürün</span></div>
+            <div class="mt-2 text-xs text-ink-soft">Aktif yorumlardaki farklı ürünler</div>
+        </div>
+
+        <div class="bg-card border border-line rounded-xl p-5 shadow-xs">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-ink-soft">5 Yıldızlı Yorum</span>
+                <span class="w-8 h-8 rounded-lg bg-brand-50 text-brand-700 grid place-items-center text-lg">★</span>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2"><span id="review-five-star-stat" class="font-display text-3xl font-bold text-brand-700">@fiveStarCount</span><span class="text-xs text-ink-soft">yorum</span></div>
+            <div class="mt-2 text-xs text-ink-soft">Aktif yorumlar içinde</div>
+        </div>
+    </div>
+
+    <div class="bg-card border border-line rounded-xl shadow-xs">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 px-5 py-4 border-b border-line">
+            <div>
+                <h2 class="font-display text-lg font-bold text-ink">Yorum Listesi</h2>
+                <p class="text-xs text-ink-soft mt-0.5">Ürün, müşteri puanı ve yorum detayı</p>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full md:flex-1 md:ml-8">
+                <label class="flex items-center gap-2.5 w-full md:flex-1 px-3 py-2 rounded-lg border border-line bg-card text-ink-soft focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="7"/><path d="m20 20-4-4" stroke-linecap="round"/>
+                    </svg>
+                    <input id="review-search" type="search" data-search-url="@Url.Action("Index", "Reviews")" data-soft-delete-url="@Url.Action("SoftDelete", "Reviews")" data-restore-url="@Url.Action("Restore", "Reviews")" data-hard-delete-url="@Url.Action("HardDelete", "Reviews")" class="w-full bg-transparent text-xs text-ink outline-none placeholder:text-ink-soft/70" placeholder="Yorum, ürün veya müşteri ara..." aria-label="Yorumlarda ara" autocomplete="off" />
+                </label>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm min-w-[1050px]">
+                <thead class="text-xs font-semibold text-ink-soft bg-brand-50/70 border-b border-line uppercase tracking-wider">
+                    <tr>
+                        <th class="px-5 py-3.5 w-24">ID</th>
+                        <th class="px-5 py-3.5">Ürün</th>
+                        <th class="px-5 py-3.5">Müşteri</th>
+                        <th class="px-5 py-3.5">Yorum</th>
+                        <th class="px-5 py-3.5 text-center">Puan</th>
+                        <th class="px-5 py-3.5">Tarih</th>
+                        <th class="px-5 py-3.5 text-center">Durum</th>
+                        <th class="px-5 py-3.5 text-right w-24">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody id="reviews-table-body" class="divide-y divide-line">
+                    @await Html.PartialAsync("_ReviewRows", reviews)
+                </tbody>
+            </table>
+        </div>
+
+        <div class="px-5 py-3 border-t border-line flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-ink-soft">
+            <span id="review-search-count">Toplam @reviews.TotalItemCount yorum (sayfa @reviews.PageNumber / @reviews.PageCount)</span>
+            <nav id="review-pagination" data-page="@reviews.PageNumber" data-page-size="@reviews.PageSize" data-page-count="@reviews.PageCount" class="inline-flex items-center gap-1" aria-label="Yorum sayfaları">
+                @if (reviews.HasPreviousPage)
+                {
+                    <button type="button" data-page="@(reviews.PageNumber - 1)" class="px-3 py-2 rounded-lg border border-line hover:bg-brand-50" aria-label="Önceki sayfa">‹</button>
+                }
+                else
+                {
+                    <button type="button" disabled class="px-3 py-2 rounded-lg border border-line opacity-40 cursor-not-allowed" aria-label="Önceki sayfa">‹</button>
+                }
+                @for (var pageNumber = 1; pageNumber <= reviews.PageCount; pageNumber++)
+                {
+                    <button type="button" data-page="@pageNumber" class="w-9 h-9 rounded-lg border @(pageNumber == reviews.PageNumber ? "bg-brand-500 text-white border-brand-500" : "border-line hover:bg-brand-50")">@pageNumber</button>
+                }
+                @if (reviews.HasNextPage)
+                {
+                    <button type="button" data-page="@(reviews.PageNumber + 1)" class="px-3 py-2 rounded-lg border border-line hover:bg-brand-50" aria-label="Sonraki sayfa">›</button>
+                }
+                else
+                {
+                    <button type="button" disabled class="px-3 py-2 rounded-lg border border-line opacity-40 cursor-not-allowed" aria-label="Sonraki sayfa">›</button>
+                }
+            </nav>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('review-search');
+            const tableBody = document.getElementById('reviews-table-body');
+            const resultCount = document.getElementById('review-search-count');
+            const totalBadge = document.querySelector('[data-review-total-badge]');
+            const pagination = document.getElementById('review-pagination');
+            let debounceTimer;
+            let activeRequest;
+            let reviewStatsConnection;
+
+            async function refreshReviewStatistics() {
+                if (reviewStatsConnection?.state === signalR.HubConnectionState.Connected) {
+                    await reviewStatsConnection.invoke('SendReviewStatistics');
+                }
+            }
+
+            async function loadReviews(page) {
+                activeRequest?.abort();
+                activeRequest = new AbortController();
+                const query = new URLSearchParams({
+                    search: searchInput.value.trim(),
+                    page: page,
+                    size: pagination.dataset.pageSize
+                });
+
+                try {
+                    const response = await fetch(`${searchInput.dataset.searchUrl}?${query}`, {
+                        method: 'GET',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        signal: activeRequest.signal
+                    });
+                    if (!response.ok) throw new Error('Yorum listesi alınamadı.');
+
+                    const html = await response.text();
+                    const parsed = new DOMParser().parseFromString(`<table><tbody>${html}</tbody></table>`, 'text/html');
+                    const total = Number(response.headers.get('X-Total-Count') ?? 0);
+                    const currentPage = Number(response.headers.get('X-Page-Number') ?? 1);
+                    const pageSize = Number(response.headers.get('X-Page-Size') ?? 15);
+                    const pageCount = Number(response.headers.get('X-Page-Count') ?? 0);
+
+                    tableBody.innerHTML = parsed.querySelector('tbody')?.innerHTML ?? html;
+                    if (resultCount) resultCount.textContent = `Toplam ${total} yorum (sayfa ${currentPage} / ${pageCount})`;
+                    if (totalBadge) totalBadge.textContent = `${total} Kayıt`;
+                    renderPagination(currentPage, pageSize, pageCount);
+                } catch (error) {
+                    if (error.name !== 'AbortError') console.error(error);
+                }
+            }
+
+            window.hardDeleteReview = async function (id) {
+                if (!window.confirm('Bu yorumu kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')) return;
+
+                try {
+                    const response = await fetch(searchInput.dataset.hardDeleteUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: new URLSearchParams({ id: String(id) })
+                    });
+                    const result = await response.json();
+                    if (!response.ok || !result.success) {
+                        window.alert(result.message ?? 'Yorum silinemedi.');
+                        return;
+                    }
+
+                    const currentPage = Number(pagination.dataset.page);
+                    const row = tableBody.querySelector(`[data-review-id="${id}"]`);
+                    row?.remove();
+                    const rowsLeft = tableBody.querySelectorAll('[data-review-row]').length;
+                    await loadReviews(rowsLeft === 0 && currentPage > 1 ? currentPage - 1 : currentPage);
+                    window.alert(result.message);
+                } catch (error) {
+                    console.error(error);
+                    window.alert('Yorum silinirken bir hata oluştu.');
+                }
+            };
+
+            window.softDeleteReview = async function (id) {
+                if (!window.confirm('Bu yorumu silmek istediğinize emin misiniz? Yorum silinmiş olarak işaretlenecek.')) return;
+
+                try {
+                    const response = await fetch(searchInput.dataset.softDeleteUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: new URLSearchParams({ id: String(id) })
+                    });
+                    const result = await response.json();
+                    if (!response.ok || !result.success) {
+                        window.alert(result.message ?? 'Yorum silinemedi.');
+                        return;
+                    }
+
+                    const currentPage = Number(pagination.dataset.page);
+                    await loadReviews(currentPage);
+                    window.alert(result.message);
+                } catch (error) {
+                    console.error(error);
+                    window.alert('Yorum silinirken bir hata oluştu.');
+                }
+            };
+
+            window.restoreReview = async function (id) {
+                if (!window.confirm('Bu yorumu geri getirmek istediğinize emin misiniz?')) return;
+
+                try {
+                    const response = await fetch(searchInput.dataset.restoreUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: new URLSearchParams({ id: String(id) })
+                    });
+                    const result = await response.json();
+                    if (!response.ok || !result.success) {
+                        window.alert(result.message ?? 'Yorum geri getirilemedi.');
+                        return;
+                    }
+
+                    await loadReviews(Number(pagination.dataset.page));
+                    window.alert(result.message);
+                } catch (error) {
+                    console.error(error);
+                    window.alert('Yorum geri getirilirken bir hata oluştu.');
+                }
+            };
+
+            function renderPagination(currentPage, pageSize, pageCount) {
+                pagination.dataset.page = currentPage;
+                pagination.dataset.pageSize = pageSize;
+                pagination.dataset.pageCount = pageCount;
+                pagination.replaceChildren();
+
+                function addButton(label, page, disabled, active, ariaLabel) {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.textContent = label;
+                    button.setAttribute('aria-label', ariaLabel);
+                    if (!disabled) button.dataset.page = page;
+                    button.disabled = disabled;
+                    button.className = active
+                        ? 'w-9 h-9 rounded-lg border bg-brand-500 text-white border-brand-500'
+                        : `px-3 py-2 rounded-lg border border-line ${disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-brand-50'}`;
+                    pagination.appendChild(button);
+                }
+
+                addButton('‹', currentPage - 1, currentPage <= 1, false, 'Önceki sayfa');
+                for (let page = 1; page <= pageCount; page++) {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.textContent = page;
+                    button.setAttribute('aria-label', `${page}. sayfa`);
+                    button.dataset.page = page;
+                    button.className = page === currentPage
+                        ? 'w-9 h-9 rounded-lg border bg-brand-500 text-white border-brand-500'
+                        : 'w-9 h-9 rounded-lg border border-line hover:bg-brand-50';
+                    pagination.appendChild(button);
+                }
+                addButton('›', currentPage + 1, currentPage >= pageCount, false, 'Sonraki sayfa');
+            }
+
+            searchInput?.addEventListener('input', function () {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => loadReviews(1), 300);
+            });
+
+            pagination?.addEventListener('click', function (event) {
+                const button = event.target.closest('button[data-page]');
+                if (!button || button.disabled) return;
+                loadReviews(Number(button.dataset.page));
+            });
+
+            if (window.signalR) {
+                reviewStatsConnection = new signalR.HubConnectionBuilder()
+                    .withUrl('/signalrhub')
+                    .withAutomaticReconnect()
+                    .build();
+
+                reviewStatsConnection.on('ReviewStatistics', function (stats) {
+                    document.getElementById('review-total-stat').textContent = stats.totalReviews;
+                    document.getElementById('review-average-stat').textContent = Number(stats.averageScore)
+                        .toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+                    document.getElementById('review-product-stat').textContent = stats.listedProducts;
+                    document.getElementById('review-five-star-stat').textContent = stats.fiveStarReviews;
+                });
+
+                async function startReviewStatsConnection() {
+                    try {
+                        await reviewStatsConnection.start();
+                        await refreshReviewStatistics();
+                    } catch (error) {
+                        console.error('Reviews SignalR bağlantısı kurulamadı:', error);
+                        setTimeout(startReviewStatsConnection, 5000);
+                    }
+                }
+
+                reviewStatsConnection.onreconnected(refreshReviewStatistics);
+                reviewStatsConnection.on('ReviewStatisticsChanged', refreshReviewStatistics);
+                reviewStatsConnection.onclose(function () {
+                    setTimeout(startReviewStatsConnection, 5000);
+                });
+                startReviewStatsConnection();
+            }
+        });
+    </script>
+}

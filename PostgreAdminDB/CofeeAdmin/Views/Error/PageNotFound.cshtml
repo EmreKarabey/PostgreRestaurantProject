@@ -1,0 +1,169 @@
+@{
+    Layout = null;
+    ViewData["Title"] = "404 - Sayfa Bulunamadı | Dina Kafe";
+}
+
+<!DOCTYPE html>
+<html lang="tr" class="h-full">
+@await Html.PartialAsync("/Views/PartialView/HeadPartialView.cshtml")
+
+<style>
+    /* Buhar animasyonu */
+    @@keyframes steamFloat {
+        0% {
+            transform: translateY(0) scaleX(1);
+            opacity: 0;
+        }
+        30% {
+            opacity: 0.6;
+        }
+        60% {
+            transform: translateY(-14px) scaleX(1.15) rotate(2deg);
+            opacity: 0.3;
+        }
+        100% {
+            transform: translateY(-26px) scaleX(1.3) rotate(-3deg);
+            opacity: 0;
+        }
+    }
+
+    /* Nazik nabız ışığı */
+    @@keyframes amberGlow {
+        0%, 100% { opacity: 0.45; transform: scale(1); }
+        50% { opacity: 0.7; transform: scale(1.06); }
+    }
+
+    .steam-1 {
+        animation: steamFloat 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    .steam-2 {
+        animation: steamFloat 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite 0.9s;
+    }
+    .steam-3 {
+        animation: steamFloat 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite 1.6s;
+    }
+
+    .ambient-glow {
+        animation: amberGlow 6s ease-in-out infinite;
+    }
+
+    /* Focus sıfırlama */
+    input:focus, button:focus, a:focus {
+        outline: none !important;
+    }
+</style>
+
+<body class="h-full min-h-screen text-ink font-sans antialiased relative flex items-center justify-center p-4 selection:bg-brand-500 selection:text-white overflow-x-hidden">
+
+    <!-- ============ ARKA PLAN GÖRSELİ & AMBIANS ============ -->
+    <div class="fixed inset-0 z-0">
+        <!-- Kahve çekirdeği / Sıcak kafe temalı arka plan fotoğrafı -->
+        <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=1920&auto=format&fit=crop&q=85"
+             alt="Dina Kafe Kahve"
+             class="w-full h-full object-cover scale-105 filter brightness-75 contrast-110" />
+
+        <!-- Koyu Espresso degrade katmanı -->
+        <div class="absolute inset-0 bg-gradient-to-tr from-[#1a120c]/95 via-[#231810]/85 to-[#150d08]/90 backdrop-blur-[3px]"></div>
+
+        <!-- Sıcak amber ışık halkaları -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] bg-brand-500/20 rounded-full blur-3xl pointer-events-none ambient-glow"></div>
+        <div class="absolute top-1/4 right-1/4 w-[350px] h-[350px] bg-[#d97706]/15 rounded-full blur-3xl pointer-events-none"></div>
+    </div>
+
+    <!-- ============ BAĞIMSIZ 404 KARTI ============ -->
+    <main class="relative z-10 w-full max-w-xl mx-auto my-8">
+
+        <div class="bg-card/95 backdrop-blur-2xl border border-line/80 rounded-3xl p-8 sm:p-12 shadow-2xl shadow-black/40 text-center space-y-8 transition-all">
+
+            <!-- Üst Logo / Marka Rozeti -->
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-50 border border-brand-100 text-brand-700 text-xs font-semibold tracking-wide">
+                <span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
+                <span>Dina Kafe Yönetim</span>
+            </div>
+
+            <!-- 404 Görsel Kompozisyonu (4 [Kahve Fincanı] 4) -->
+            <div class="flex items-center justify-center gap-2 sm:gap-4 select-none">
+                
+                <!-- Sol "4" -->
+                <span class="font-display text-7xl sm:text-9xl font-black tracking-tighter text-ink drop-shadow-sm">
+                    4
+                </span>
+
+                <!-- Ortadaki Fincan & Tüten Buhar -->
+                <div class="relative w-20 h-20 sm:w-28 sm:h-28 flex items-center justify-center">
+                    
+                    <!-- Fincan Arkası Yumuşak Işıma -->
+                    <div class="absolute inset-0 bg-brand-500/20 rounded-full blur-xl"></div>
+
+                    <!-- Fincandan Yükselen Buhar Çizgileri -->
+                    <div class="absolute -top-7 sm:-top-9 flex gap-2 pointer-events-none">
+                        <span class="steam-1 w-1 h-5 sm:h-7 rounded-full bg-gradient-to-t from-brand-500/40 to-transparent"></span>
+                        <span class="steam-2 w-1.5 h-6 sm:h-8 rounded-full bg-gradient-to-t from-brand-500/50 to-transparent"></span>
+                        <span class="steam-3 w-1 h-5 sm:h-7 rounded-full bg-gradient-to-t from-brand-500/40 to-transparent"></span>
+                    </div>
+
+                    <!-- Kahve Fincanı İkonu -->
+                    <div class="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl bg-brand-500/10 border border-brand-500/25 flex items-center justify-center text-brand-500 shadow-inner">
+                        <svg class="w-9 h-9 sm:w-14 sm:h-14 transition-transform hover:rotate-6 duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
+                            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+                            <line x1="6" y1="1" x2="6" y2="4"/>
+                            <line x1="10" y1="1" x2="10" y2="4"/>
+                            <line x1="14" y1="1" x2="14" y2="4"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Sağ "4" -->
+                <span class="font-display text-7xl sm:text-9xl font-black tracking-tighter text-ink drop-shadow-sm">
+                    4
+                </span>
+
+            </div>
+
+            <!-- Başlık & Açıklama Metinleri -->
+            <div class="space-y-3 max-w-md mx-auto">
+                <h1 class="font-display text-2xl sm:text-3xl font-bold text-ink tracking-tight">
+                    Eyvah! Bu Fincan Boş Çıktı...
+                </h1>
+                <p class="text-sm sm:text-base text-ink-soft leading-relaxed">
+                    Aradığınız sayfa ya hiç demlenmedi ya da menümüzden kaldırıldı. Endişelenmeyin, kahveniz soğumadan sizi güvenli bir rotaya alalım!
+                </p>
+            </div>
+
+            <!-- Yönlendirme ve Aksiyon Butonları -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                
+                <!-- Ana Sayfaya / Ürünlere Dön -->
+                <a href="/Product/Index" 
+                   class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-sm shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    <span>Ürün Yönetimine Git</span>
+                </a>
+
+                <!-- Bir Önceki Sayfaya Geri Dön -->
+                <button type="button" 
+                        onclick="history.back()" 
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl bg-paper hover:bg-brand-50 text-ink border border-line font-semibold text-sm transition-all hover:border-brand-200">
+                    <svg class="w-4 h-4 text-ink-soft" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    <span>Önceki Sayfaya Dön</span>
+                </button>
+
+            </div>
+
+
+        </div>
+
+        <!-- En Alt Telif / Bilgi -->
+        <p class="text-center text-xs text-brand-100/60 mt-6 tracking-wide select-none">
+            &copy; @DateTime.Now.Year Dina Kafe &bull; Tüm Hakları Saklıdır.
+        </p>
+
+    </main>
+
+</body>
+</html>

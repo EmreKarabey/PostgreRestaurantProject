@@ -1,0 +1,431 @@
+@using CofeeAdmin.Dto.Product
+@model UpdateProductDto
+
+@{
+    ViewData["Title"] = "Ürünü Güncelle";
+    Layout = "_Layout";
+    var existingImageUrl = !string.IsNullOrWhiteSpace(Model?.ImageURL) 
+        ? $"/Image/Get?url={Uri.EscapeDataString(Model.ImageURL)}&thumbnail=true" 
+        : "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&auto=format&fit=crop&q=80";
+}
+
+<div class="space-y-8">
+
+    <!-- ============ ÜST BAŞLIK VE GERİ DÖNÜŞ ALANI ============ -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-line/70">
+        <div>
+            <div class="flex items-center gap-3">
+                <a href="/Product/Index" 
+                   class="p-2 rounded-lg border border-line bg-card hover:bg-brand-50 text-ink-soft hover:text-ink transition-colors"
+                   title="Ürün Listesine Dön">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <h1 class="font-display text-3xl font-bold tracking-tight text-ink">Ürünü Güncelle</h1>
+                <span class="text-xs font-mono font-semibold px-2.5 py-1 rounded-full bg-brand-100 text-brand-700">
+                    #PRD-@(Model?.EntityID ?? 0)
+                </span>
+            </div>
+            <p class="text-sm text-ink-soft mt-1 sm:ml-11">
+                Ürün bilgilerini, satış fiyatını, kategorisini, görselini ve yayın durumunu güncelleyin.
+            </p>
+        </div>
+
+        <!-- Sağ Aksiyon: Listeye Geri Dön -->
+        <div class="shrink-0">
+            <a href="/Product/Index" class="btn btn-ghost text-xs">
+                <svg class="w-4 h-4 text-ink-soft" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Ürün Listesine Dön</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ============ FORM VE CANLI ÖNİZLEME ALANI ============ -->
+    <div x-data="{ 
+            name: '@(Model?.ProductName?.Replace("'", "\\'") ?? "")', 
+            price: '@(Model != null && Model.Price > 0 ? Model.Price.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) : "")', 
+            description: '@(Model?.Descrption?.Replace("'", "\\'")?.Replace("\r\n", " ")?.Replace("\n", " ") ?? "")',
+            categoryId: '@(Model?.CategoryId ?? 0)',
+            categoryName: '',
+            image: '', 
+            fileName: '',
+            isDragging: false,
+            status: @(Model != null ? (Model.Status ? "true" : "false") : "true"),
+            currentImage: '@existingImageUrl',
+            defaultImage: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&auto=format&fit=crop&q=80',
+            init() {
+                this.$nextTick(() => {
+                    const select = document.getElementById('CategoryId');
+                    if (select) {
+                        if (this.categoryId && this.categoryId !== '0') {
+                            select.value = this.categoryId;
+                        }
+                        if (select.value) {
+                            this.categoryId = select.value;
+                            this.categoryName = select.options[select.selectedIndex]?.text || '';
+                        }
+                    }
+                });
+            },
+            formatPrice(val) {
+                if (!val) return '0.00';
+                let clean = String(val).trim().replace('₺', '').replace(/\s/g, '');
+                if (clean.includes(',') && clean.includes('.')) {
+                    if (clean.indexOf('.') < clean.indexOf(',')) {
+                        clean = clean.replace(/\./g, '').replace(',', '.');
+                    } else {
+                        clean = clean.replace(/,/g, '');
+                    }
+                } else if (clean.includes(',')) {
+                    clean = clean.replace(',', '.');
+                }
+                const num = parseFloat(clean);
+                if (isNaN(num)) return '0.00';
+                return num.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            },
+            handleFile(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    this.fileName = file.name;
+                    this.image = URL.createObjectURL(file);
+                }
+            },
+            handleDrop(event) {
+                const file = event.dataTransfer?.files?.[0];
+                if (file) {
+                    const input = document.getElementById('Image');
+                    if (input && event.dataTransfer) {
+                        input.files = event.dataTransfer.files;
+                    }
+                    this.fileName = file.name;
+                    this.image = URL.createObjectURL(file);
+                }
+            },
+            updateCategory(event) {
+                const select = event.target;
+                this.categoryId = select.value;
+                this.categoryName = select.options[select.selectedIndex]?.text || '';
+            }
+         }" 
+         x-init="init()"
+         class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+        <!-- ============ SOL ALAN: FORM GİRDİLERİ (8 Kolon) ============ -->
+        <div class="lg:col-span-7 xl:col-span-8 bg-card border border-line rounded-2xl p-6 sm:p-8 shadow-xs">
+            <div class="flex items-center gap-3 pb-5 mb-6 border-b border-line/60">
+                <div class="w-9 h-9 rounded-xl bg-brand-50 text-brand-700 grid place-items-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="font-display text-lg font-bold text-ink">Ürün Detayları</h2>
+                    <p class="text-xs text-ink-soft">Yapmak istediğiniz değişiklikleri uygulayın ve kaydedin.</p>
+                </div>
+            </div>
+
+            <!-- Genel Hata Bildirim Kutusu -->
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="mb-6 rounded-xl border border-bad/30 bg-bad/5 p-4 text-sm text-bad flex items-start gap-3">
+                    <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <div>
+                        <h4 class="font-semibold text-bad mb-1">Güncelleme sırasında bir hata oluştu:</h4>
+                        <div asp-validation-summary="All" class="text-xs space-y-0.5"></div>
+                    </div>
+                </div>
+            }
+
+            <!-- Form: UpdateProduct action ve dosya yükleme (multipart/form-data) -->
+            <form method="post" action="/Product/UpdateProduct" enctype="multipart/form-data" class="space-y-6">
+
+                <!-- Gizli Alanlar (ID ve Mevcut ImageURL) -->
+                <input type="hidden" name="EntityID" value="@Model?.EntityID" />
+                <input type="hidden" name="ImageURL" value="@Model?.ImageURL" />
+
+                <!-- 1. Ürün Adı (ProductName) -->
+                <div class="space-y-1.5">
+                    <label for="ProductName" class="block text-xs font-semibold text-ink uppercase tracking-wider">
+                        Ürün Adı <span class="text-bad">*</span>
+                    </label>
+                    <div class="relative">
+                        <input type="text" 
+                               id="ProductName" 
+                               name="ProductName" 
+                               value="@(Model?.ProductName)"
+                               x-model="name"
+                               required 
+                               placeholder="Örn: Caramel Macchiato, Flat White, Cheesecake, Kruvasan" 
+                               class="input py-2.5 text-sm font-medium text-ink placeholder:text-ink-soft/40">
+                    </div>
+                    <span asp-validation-for="ProductName" class="text-xs text-bad block font-medium mt-1"></span>
+                    <p class="text-[11px] text-ink-soft">
+                        Menüde ve sipariş ekranında görüntülenecek ürün başlığı.
+                    </p>
+                </div>
+
+                <!-- 2. Kategori Seçimi & Fiyat (2 Kolon) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Kategori (CategoryId Component) -->
+                    @await Component.InvokeAsync("_CategoriesUpdatePartialComponent", new { selectedCategoryId = Model?.CategoryId })
+
+                    <!-- Fiyat (Price) -->
+                    <div class="space-y-1.5">
+                        <label for="Price" class="block text-xs font-semibold text-ink uppercase tracking-wider">
+                            Satış Fiyatı <span class="text-bad">*</span>
+                        </label>
+                        <div class="flex items-stretch rounded-xl border border-line bg-card focus-within:ring-2 focus-within:ring-brand-500/40 focus-within:border-brand-500 transition-all overflow-hidden shadow-2xs">
+                            <span class="inline-flex items-center justify-center px-4 bg-brand-50/90 text-brand-700 font-bold text-sm border-r border-line select-none shrink-0">
+                                ₺
+                            </span>
+                            <input type="text" 
+                                   inputmode="decimal"
+                                   id="Price" 
+                                   name="Price" 
+                                   required 
+                                   x-model="price"
+                                   @@input="price = price.replace(/[^0-9.,]/g, '')"
+                                   placeholder="0.00" 
+                                   class="w-full px-3.5 py-2.5 text-sm font-medium text-ink bg-transparent outline-none font-mono placeholder:text-ink-soft/40 border-0 focus:outline-none">
+                        </div>
+                        <span asp-validation-for="Price" class="text-xs text-bad block font-medium mt-1"></span>
+                        <p class="text-[11px] text-ink-soft">KDV dahil birim satış tutarı (örn: 120 veya 145,50).</p>
+                    </div>
+                </div>
+
+                <!-- 3. Ürün Açıklaması (Descrption) -->
+                <div class="space-y-1.5">
+                    <label for="Descrption" class="block text-xs font-semibold text-ink uppercase tracking-wider">
+                        Ürün Açıklaması
+                    </label>
+                    <div class="relative">
+                        <textarea id="Descrption" 
+                                  name="Descrption" 
+                                  rows="3" 
+                                  x-model="description"
+                                  placeholder="Ürünün içeriği, çekirdek profili, aroma notaları veya porsiyon bilgisi..." 
+                                  class="input py-2.5 text-sm font-medium text-ink placeholder:text-ink-soft/40 resize-none">@(Model?.Descrption)</textarea>
+                    </div>
+                    <span asp-validation-for="Descrption" class="text-xs text-bad block font-medium mt-1"></span>
+                    <p class="text-[11px] text-ink-soft">
+                        Müşterilere sunulan detaylı lezzet ve içerik açıklaması.
+                    </p>
+                </div>
+
+                <!-- 4. Ürün Görseli (Image - IFormFile) -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label for="Image" class="block text-xs font-semibold text-ink uppercase tracking-wider">
+                            Ürün Görseli
+                        </label>
+                        @if (!string.IsNullOrWhiteSpace(Model?.ImageURL))
+                        {
+                            <span class="text-[11px] font-medium text-ok bg-ok/10 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-ok"></span>
+                                Mevcut Görsel Kayıtlı
+                            </span>
+                        }
+                    </div>
+
+                    <!-- Mevcut Görsel Önizleme Şeridi (Eğer varsa) -->
+                    @if (!string.IsNullOrWhiteSpace(Model?.ImageURL))
+                    {
+                        <div class="flex items-center gap-3 p-3 rounded-xl border border-line bg-paper/60">
+                            <img src="@existingImageUrl" 
+                                 alt="@Model?.ProductName" 
+                                 class="w-12 h-12 rounded-lg object-cover border border-line shrink-0"
+                                 onerror="this.src='https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=300&auto=format&fit=crop&q=80'" />
+                            <div class="flex-1 min-w-0">
+                                <span class="text-xs font-semibold text-ink block">Kullanımdaki Mevcut Görsel</span>
+                                <span class="text-[11px] text-ink-soft block truncate">Görseli değiştirmek istemiyorsanız yeni dosya seçmeyiniz.</span>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Yeni Görsel Yükleme Kutusu -->
+                    <div class="relative">
+                        <label for="Image" 
+                               @@dragover.prevent="isDragging = true"
+                               @@dragleave.prevent="isDragging = false"
+                               @@drop.prevent="isDragging = false; handleDrop($event)"
+                               :class="isDragging ? 'border-brand-500 bg-brand-50/70 ring-2 ring-brand-500/20' : 'border-line bg-paper/40 hover:bg-brand-50/50 hover:border-brand-500/60'"
+                               class="flex flex-col items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-xl cursor-pointer transition-all text-center group">
+                            
+                            <div class="w-10 h-10 rounded-full bg-brand-50 group-hover:bg-brand-100 text-brand-700 grid place-items-center mb-2 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            
+                            <span class="text-xs font-semibold text-ink" x-text="fileName ? fileName : 'Yeni bir görsel seçmek için tıklayın veya sürükleyin'"></span>
+                            <span class="text-[11px] text-ink-soft mt-1">PNG, JPG, WEBP (Cloudflare R2'ye yüklenir)</span>
+
+                            <input type="file" 
+                                   id="Image" 
+                                   name="Image" 
+                                   accept="image/*"
+                                   @@change="handleFile($event)"
+                                   class="sr-only">
+                        </label>
+                    </div>
+                    <span asp-validation-for="Image" class="text-xs text-bad block font-medium mt-1"></span>
+                </div>
+
+                <!-- 5. Yayın Durumu (Status) -->
+                <div class="pt-2">
+                    <label class="block text-xs font-semibold text-ink uppercase tracking-wider mb-2">
+                        Yayın Durumu
+                    </label>
+                    <div class="p-4 rounded-xl border border-line bg-paper/50 flex items-center justify-between gap-4">
+                        <div>
+                            <span class="text-sm font-semibold text-ink block" x-text="status ? 'Menüde Aktif (Satışta)' : 'Pasif (Gizli / Taslak)'"></span>
+                            <span class="text-xs text-ink-soft block mt-0.5">
+                                Aktif ürünler menüde müşterilere hemen listelenir ve sipariş verilebilir.
+                            </span>
+                        </div>
+
+                        <!-- Toggle Switch -->
+                        <label class="relative inline-flex items-center cursor-pointer shrink-0 select-none">
+                            <input type="checkbox" 
+                                   id="Status" 
+                                   name="Status" 
+                                   value="true" 
+                                   x-model="status" 
+                                   class="sr-only peer" 
+                                   @(Model != null && Model.Status ? "checked" : "")>
+                            <input type="hidden" name="Status" value="false">
+                            <div class="w-11 h-6 bg-line peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-line after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-ok"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Form Butonları -->
+                <div class="pt-6 border-t border-line flex items-center justify-end gap-3">
+                    <a href="/Product/Index" class="btn btn-ghost px-5 text-xs">
+                        Vazgeç
+                    </a>
+                    <button type="submit" class="btn btn-primary px-6 text-xs shadow-xs">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                            <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>Değişiklikleri Kaydet</span>
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- ============ SAĞ ALAN: CANLI ÖNİZLEME KARTI (4-5 Kolon) ============ -->
+        <div class="lg:col-span-5 xl:col-span-4 space-y-6">
+
+            <!-- Önizleme Başlığı -->
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-ink-soft uppercase tracking-wider">
+                    Canlı Görünüm Önizlemesi
+                </span>
+                <span class="text-[11px] font-semibold text-brand-700 bg-brand-100 px-2 py-0.5 rounded-full">
+                    Anlık Görünüm
+                </span>
+            </div>
+
+            <!-- Canlı Önizleme Kartı (Menü Görünümü) -->
+            <div class="bg-card border border-line rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <!-- Görsel Alanı -->
+                <div class="relative h-52 w-full bg-paper overflow-hidden">
+                    <img :src="image || currentImage || defaultImage" 
+                         :alt="name || 'Ürün Önizleme'" 
+                         @@error="$event.target.src=defaultImage"
+                         class="w-full h-full object-cover transition-transform duration-300">
+
+                    <!-- Karartma Gradyanı -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/25 to-transparent"></div>
+
+                    <!-- Sağ Üst: Durum Rozeti -->
+                    <div class="absolute top-3 right-3">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-xs transition-colors shadow-xs"
+                              :class="status ? 'bg-ok/90 text-white' : 'bg-ink/80 text-brand-100'">
+                            <span class="w-1.5 h-1.5 rounded-full" :class="status ? 'bg-white' : 'bg-warn'"></span>
+                            <span x-text="status ? 'Aktif' : 'Pasif'"></span>
+                        </span>
+                    </div>
+
+                    <!-- Sol Üst: Kategori Rozeti -->
+                    <div class="absolute top-3 left-3">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/90 backdrop-blur-xs text-ink shadow-xs">
+                            <svg class="w-3.5 h-3.5 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z"/>
+                            </svg>
+                            <span x-text="categoryName && categoryName !== 'Kategori Seçiniz' ? categoryName : 'Kategori'"></span>
+                        </span>
+                    </div>
+
+                    <!-- Sol Alt: Ürün İsmi & Kod -->
+                    <div class="absolute bottom-3 left-3 right-3 text-white">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-mono font-semibold bg-white/20 backdrop-blur-xs px-2 py-0.5 rounded text-white">
+                                #PRD-@(Model?.EntityID ?? 0)
+                            </span>
+                            <span class="text-[11px] text-brand-100/90 font-medium">Menü Ürünü</span>
+                        </div>
+                        <h3 class="font-display text-xl font-bold text-white tracking-tight drop-shadow-xs line-clamp-1 mt-0.5" 
+                            x-text="name ? name : 'Ürün Adı Giriniz...'">
+                        </h3>
+                    </div>
+                </div>
+
+                <!-- Kart Gövdesi: Açıklama ve Fiyat -->
+                <div class="p-5 space-y-3">
+                    <p class="text-xs text-ink-soft line-clamp-2 leading-relaxed" 
+                       x-text="description ? description : 'Ürün açıklaması burada canlı olarak görüntülenecektir.'">
+                    </p>
+
+                    <div class="pt-3 border-t border-line/60 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] text-ink-soft uppercase tracking-wider block font-semibold">Satış Fiyatı</span>
+                            <div class="font-mono text-xl font-bold text-ink">
+                                ₺<span x-text="formatPrice(price)"></span>
+                            </div>
+                        </div>
+
+                        <span class="text-[11px] font-semibold text-brand-700 bg-brand-50 border border-brand-100 px-2.5 py-1 rounded-full">
+                            #Güncelleme
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Kart Alt Bilgisi -->
+                <div class="px-5 py-3.5 bg-paper/60 border-t border-line/60 flex items-center justify-between text-xs text-ink-soft">
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-brand-500"></span>
+                        Menüdeki canlı müşteri görünümü
+                    </span>
+                    <span class="font-semibold text-brand-700">
+                        Dina Kafe
+                    </span>
+                </div>
+            </div>
+
+            <!-- Bilgilendirme İpucu Kutusu -->
+            <div class="p-4 rounded-xl border border-line bg-brand-50/50 text-xs text-ink-soft space-y-1.5">
+                <div class="flex items-center gap-2 font-semibold text-ink">
+                    <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Güncelleme İpuçları</span>
+                </div>
+                <p>• Ürün görselini değiştirmek istemiyorsanız dosya seçme alanına dokunmayınız.</p>
+                <p>• Satış fiyatında yapılan değişiklikler menüde ve kasada anında geçerli olur.</p>
+                <p>• Yeni görsel seçtiğinizde veya sürüklediğinizde sağdaki canlı önizleme kartında anında güncellenir.</p>
+                <p>• Pasif yapılan ürünler sipariş ekranında ve menü listesinde gizlenir.</p>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,56 @@
+﻿@using EntityLayer.Entities
+@using X.PagedList
+@model IPagedList<Reservation>
+
+<article class="rounded-2xl bg-card border border-line overflow-hidden shadow-sm">
+    <div class="px-6 py-4 border-b border-line flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <h3 class="font-display text-lg font-semibold">Son Rezervasyon Kayıtları</h3>
+            <p class="text-xs text-ink-soft mt-0.5">Müşteriler tarafından yapılan son masa rezervasyonları</p>
+        </div>
+        <div>
+            <a href="/Reservation/Index" class="text-xs font-semibold text-brand-600 hover:text-brand-800 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                Tümü
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </a>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="text-left text-ink-soft bg-brand-50/50 text-xs uppercase tracking-wider">
+                <tr>
+                    <th class="px-6 py-3.5 font-medium">Müşteri Ad Soyad</th>
+                    <th class="px-6 py-3.5 font-medium">E-Posta / Tel</th>
+                    <th class="px-6 py-3.5 font-medium">Masa No</th>
+                    <th class="px-6 py-3.5 font-medium">Kişi Sayısı</th>
+                    <th class="px-6 py-3.5 font-medium">Rezervasyon Tarihi</th>
+                </tr>
+            </thead>
+
+            <tbody class="divide-y divide-line">
+                @foreach (var item in Model)
+                {
+                    <tr class="hover:bg-brand-50/30 transition-colors">
+                        <td class="px-6 py-4 font-bold text-ink">@item.FirstName @item.LastName</td>
+                        <td class="px-6 py-4 text-ink-soft">
+                            <div>@item.Email</div>
+                            <div class="text-xs text-ink-soft/80">@item.PhoneNumber</div>
+                        </td>
+                        @if (item.TableNumber > 0)
+                        {
+                            <td class="px-6 py-4 font-semibold text-brand-700">Masa @item.TableNumber</td>
+                        }
+                        else
+                        {
+                            <td class="px-6 py-4 font-semibold text-ink-soft">-</td>
+                        }
+
+                        <td class="px-6 py-4 font-medium text-ink">@item.NumberOfPeople Kişi</td>
+                        <td class="px-6 py-4 text-ink-soft text-xs">@item.CreatedAt.ToShortDateString() @item.CreatedAt.ToShortTimeString()</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</article>

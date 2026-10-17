@@ -1,0 +1,15 @@
+<script>
+    function adminApp() {
+        return {
+            /* Mobil menü ve kullanıcı açılır menüsü kontrolleri */
+            menuOpen: false,
+            userMenu: false,
+
+            init() {
+                const isMobile = window.matchMedia('(max-width: 1023px)').matches;
+                this.menuOpen = isMobile && sessionStorage.getItem('adminSidebarOpen') === 'true';
+                if (!isMobile) sessionStorage.removeItem('adminSidebarOpen');
+            }
+        };
+    }
+</script>

@@ -1,0 +1,508 @@
+@using EntityLayer.Entities
+@model List<AppRole>
+
+@{
+    ViewData["Title"] = "Rol Yönetimi";
+    Layout = "_Layout";
+
+    var totalRoles = Model?.Count ?? 0;
+}
+
+<div class="space-y-8" x-data="roleManagementApp()">
+
+    <!-- ============ BAŞARI VE BİLGİ BİLDİRİMLERİ ============ -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="p-4 rounded-xl border border-ok/30 bg-ok/10 text-ok flex items-center justify-between shadow-xs">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-linecap="round"/>
+                    <path d="M22 4L12 14.01l-3-3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="text-sm font-semibold">@TempData["SuccessMessage"]</span>
+            </div>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="p-4 rounded-xl border border-bad/30 bg-bad/10 text-bad flex items-center justify-between shadow-xs">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span class="text-sm font-semibold">@TempData["ErrorMessage"]</span>
+            </div>
+        </div>
+    }
+
+    <!-- ============ SAYFA ÜST BAŞLIĞI VE AKSİYONLAR ============ -->
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-2 border-b border-line/70">
+        <div>
+            <div class="flex items-center gap-3">
+                <h1 class="font-display text-3xl font-bold tracking-tight text-ink">Rol Yönetimi</h1>
+                <span class="text-xs font-sans font-semibold px-2.5 py-1 rounded-full bg-brand-100 text-brand-700">
+                    @totalRoles Tanımlı Rol
+                </span>
+            </div>
+            <p class="text-sm text-ink-soft mt-1">
+                Sistemdeki yetki gruplarını (Admin, Manager, Barista vb.) görüntüleyebilir, yetki seviyelerini ve güvenlik mühürlerini yönetebilirsiniz.
+            </p>
+        </div>
+
+        <!-- Aksiyon Butonları -->
+        <div class="flex items-center gap-3 shrink-0">
+            <a href="/Role/Index" class="btn btn-ghost text-xs" title="Sayfayı Yenile">
+                <svg class="w-4 h-4 text-ink-soft" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span>Yenile</span>
+            </a>
+            <a href="/Role/AddRole" class="btn btn-primary text-xs shadow-xs">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span>Yeni Rol Ekle</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ============ ARAMA ÇUBUĞU ============ -->
+    <div class="bg-card border border-line rounded-xl p-4 shadow-xs">
+        <div class="max-w-md">
+            <div class="flex items-center w-full rounded-lg border border-line bg-paper/50 px-3.5 py-2.5 focus-within:ring-2 focus-within:ring-brand-500/20 focus-within:border-brand-500 transition-all">
+                <!-- Büyüteç İkonu -->
+                <svg class="w-4 h-4 text-ink-soft/70 shrink-0 mr-3 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                
+                <!-- Arama Inputu -->
+                <input type="text"
+                       x-model="searchQuery"
+                       placeholder="Rol adı veya güvenlik kodu ile ara..."
+                       class="w-full bg-transparent text-xs text-ink placeholder:text-ink-soft/50 border-none outline-none focus:outline-none focus:ring-0 p-0 m-0 shadow-none ring-0" />
+                
+                <!-- Temizleme Butonu -->
+                <button type="button"
+                        x-cloak
+                        x-show="searchQuery"
+                        @@click="searchQuery = ''"
+                        class="text-ink-soft hover:text-ink ml-2 cursor-pointer shrink-0"
+                        title="Aramayı Temizle">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ ROL VERİ TABLOSU ============ -->
+    <div class="bg-card border border-line rounded-xl shadow-xs">
+        <div class="overflow-x-auto min-h-[220px] lg:overflow-visible">
+            <table class="w-full text-left text-sm">
+                <!-- Tablo Başlıkları -->
+                <thead class="text-xs font-semibold text-ink-soft bg-brand-50/70 border-b border-line uppercase tracking-wider">
+                    <tr>
+                        <th class="px-6 py-3.5 w-20">ID</th>
+                        <th class="px-6 py-3.5">Rol Tanımı</th>
+                        <th class="px-6 py-3.5">Sistem Adı (Normalized)</th>
+                        <th class="px-6 py-3.5 text-right w-24">İşlemler</th>
+                    </tr>
+                </thead>
+
+                <!-- Tablo Satırları -->
+                <tbody class="divide-y divide-line">
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            var roleName = item.Name ?? "Tanımsız";
+                            var normalizedName = item.NormalizedName ?? roleName.ToUpper();
+
+                            <tr id="role-row-@item.Id"
+                                x-show="matchesRow('@item.Id', '@roleName.ToLower()', '@normalizedName.ToLower()')"
+                                class="hover:bg-brand-50/40 transition-all duration-300">
+
+                                <!-- ID -->
+                                <td class="px-6 py-4 font-mono text-xs text-ink-soft">
+                                    #@item.Id
+                                </td>
+
+                                <!-- Rol Adı & İkon -->
+                                <td class="px-6 py-4">
+                                    <span class="font-display font-semibold text-ink text-base block leading-snug">
+                                        @roleName
+                                    </span>
+                                </td>
+
+                                <!-- Normalize Sistem Adı -->
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-brand-50 text-ink border border-line">
+                                        @normalizedName
+                                    </span>
+                                </td>
+
+                                <!-- Actions Dropdown -->
+                                <td class="px-6 py-4 text-right">
+                                    <div class="relative inline-block text-left" x-data="{ open: false, dropUp: false }" @@click.outside="open = false">
+                                        <button type="button"
+                                                @@click="
+                                                    const rect = $el.getBoundingClientRect();
+                                                    dropUp = (window.innerHeight - rect.bottom) < 180;
+                                                    open = !open;
+                                                "
+                                                :class="open ? 'bg-brand-100 text-brand-700 border-brand-300 ring-2 ring-brand-200' : 'text-ink-soft hover:text-ink bg-card hover:bg-brand-50 border-line'"
+                                                class="w-8 h-8 rounded-lg border transition-all cursor-pointer shadow-xs focus:outline-none inline-flex items-center justify-center"
+                                                title="İşlemler"
+                                                aria-label="Rol İşlemleri">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                <circle cx="12" cy="5" r="1.8"/>
+                                                <circle cx="12" cy="12" r="1.8"/>
+                                                <circle cx="12" cy="19" r="1.8"/>
+                                            </svg>
+                                        </button>
+
+                                        <div x-cloak
+                                             x-show="open"
+                                             x-transition:enter="transition ease-out duration-100"
+                                             x-transition:enter-start="transform opacity-0 scale-95"
+                                             x-transition:enter-end="transform opacity-100 scale-100"
+                                             x-transition:leave="transition ease-in duration-75"
+                                             x-transition:leave-start="transform opacity-100 scale-100"
+                                             x-transition:leave-end="transform opacity-0 scale-95"
+                                             :class="dropUp ? 'bottom-full mb-1.5 origin-bottom-right' : 'top-full mt-1.5 origin-top-right'"
+                                             class="absolute right-0 w-44 bg-card border border-line rounded-xl shadow-xl py-1 z-30 divide-y divide-line/60">
+
+                                            <!-- Düzenle -->
+                                            <div class="p-1">
+                                                <a href="/Role/UpdateRole/@item.Id"
+                                                   class="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-ink-soft hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors group">
+                                                    <svg class="w-4 h-4 text-ink-soft group-hover:text-brand-600 transition-colors" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                                        <path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                    </svg>
+                                                    <span>Rolü Düzenle</span>
+                                                </a>
+                                            </div>
+
+                                            <!-- Kullanıcıları Gör (Modal Tetikleyici) -->
+                                            <div class="p-1">
+                                                <button type="button"
+                                                        @@click.stop="open = false; openUsersModal(@item.Id, '@roleName.Replace("'", "\\'")')"
+                                                        class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-ink-soft hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors group text-left cursor-pointer">
+                                                    <svg class="w-4 h-4 text-ink-soft group-hover:text-brand-600 transition-colors" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                                        <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                                    </svg>
+                                                    <span>Kullanıcıları Gör</span>
+                                                </button>
+                                            </div>
+
+                                            <!-- Sil -->
+                                            <div class="p-1">
+                                                <button type="button"
+                                                        @@click="open = false; deleteRole(@item.Id, '@roleName.Replace("'", "\\'")')"
+                                                        class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-bad hover:bg-bad/10 rounded-lg transition-colors group text-left cursor-pointer">
+                                                    <svg class="w-4 h-4 text-bad group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                                        <path d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16"/>
+                                                    </svg>
+                                                    <span>Rolü Sil</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <!-- Boş Durum (Sistemde Rol Yoksa) -->
+                        <tr>
+                            <td colspan="4" class="px-6 py-12 text-center">
+                                <div class="max-w-sm mx-auto">
+                                    <div class="w-12 h-12 rounded-full bg-brand-50 text-brand-600 grid place-items-center mx-auto mb-3">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                            <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                        </svg>
+                                    </div>
+                                    <h3 class="font-display text-lg font-bold text-ink">Henüz Tanımlı Rol Bulunmuyor</h3>
+                                    <p class="text-xs text-ink-soft mt-1">Sistemde yetki grubu tanımlanmadı. Yeni bir rol (Admin, Barista vb.) tanımlayarak başlayabilirsiniz.</p>
+                                    <div class="mt-4">
+                                        <a href="/Role/AddRole" class="btn btn-primary text-xs shadow-xs">
+                                            Yeni Rol Ekle
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ============ TABLO ALTI BİLGİLENDİRME ============ -->
+        @if (Model != null && Model.Any())
+        {
+            <div class="px-6 py-4 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink-soft bg-card">
+                <span>
+                    Toplam <strong>@totalRoles</strong> kayıtlı rol listeleniyor
+                </span>
+                <span class="text-xs text-brand-700 font-medium">
+                    Dina Coffee Güvenli Rol & Yetki Sistemi
+                </span>
+            </div>
+        }
+    </div>
+
+    <!-- ================================================================================== -->
+    <!-- ============ ROL KULLANICILARI MODAL (VIEWCOMPONENT İÇİN HAZIR ALAN) ============ -->
+    <!-- ================================================================================== -->
+    <div x-cloak
+         x-show="isModalOpen"
+         @@keydown.escape.window="closeUsersModal()"
+         class="fixed inset-0 z-50 overflow-y-auto"
+         aria-labelledby="modal-title" role="dialog" aria-modal="true">
+
+        <!-- Arka Plan Karartması (Backdrop) -->
+        <div x-show="isModalOpen"
+             x-transition:enter="ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-ink/50 backdrop-blur-xs transition-opacity"
+             @@click="closeUsersModal()"></div>
+
+        <!-- Modal Konumlandırma -->
+        <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            <div x-show="isModalOpen"
+                 x-transition:enter="ease-out duration-250"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="ease-in duration-150"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 @@click.outside="closeUsersModal()"
+                 class="relative transform overflow-hidden rounded-2xl bg-card border border-line text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
+
+                <!-- MODAL ÜST BAŞLIK (HEADER) -->
+                <div class="flex items-center justify-between px-6 py-4 border-b border-line bg-paper/60">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 grid place-items-center shrink-0 border border-brand-200">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-display text-lg font-bold text-ink" id="modal-title">
+                                    <span x-text="activeRoleName">Rol</span> Rolüne Sahip Kullanıcılar
+                                </h3>
+                                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-brand-50 text-brand-700 border border-brand-200"
+                                      x-text="'ID: #' + activeRoleId">
+                                    #1
+                                </span>
+                            </div>
+                            <p class="text-xs text-ink-soft mt-0.5">
+                                Bu role atanmış kayıtlı personeller ve kullanıcılar listeleniyor.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Kapat Butonu (X) -->
+                    <button type="button"
+                            @@click="closeUsersModal()"
+                            class="text-ink-soft hover:text-ink p-1.5 rounded-lg hover:bg-brand-50 transition-colors cursor-pointer"
+                            title="Pencereyi Kapat">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- ========================================================================= -->
+                <!-- 2. VIEWCOMPONENT ALANI (GÖVDE) -->
+                <!-- ========================================================================= -->
+                <div id="role-users-modal-content" class="p-6 space-y-4 max-h-[420px] overflow-y-auto">
+                    @await Component.InvokeAsync("_UserRolesPartialComponent", new { roleName = Model?.FirstOrDefault()?.Name ?? "" })
+                </div>
+                <!-- ========================================================================= -->
+                <!-- VIEWCOMPONENT ALANI SONU -->
+                <!-- ========================================================================= -->
+
+                <!-- MODAL ALT AKSİYONLAR (FOOTER) -->
+                <div class="flex items-center justify-between px-6 py-4 border-t border-line bg-paper/40">
+                    <span class="text-[11px] text-ink-soft">
+                        Rol atamalarını Kullanıcı Yönetimi üzerinden değiştirebilirsiniz.
+                    </span>
+                    <div class="flex items-center gap-2.5">
+                        <button type="button"
+                                @@click="closeUsersModal()"
+                                class="btn btn-ghost text-xs">
+                            Kapat
+                        </button>
+                        <a href="/UserManagment/Index"
+                           class="btn btn-primary text-xs shadow-xs">
+                            <span>Kullanıcı Yönetimi</span>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ============ ALPINESCRIPT & JAVASCRIPT ============ -->
+<script>
+    function roleManagementApp() {
+        return {
+            searchQuery: '',
+            isModalOpen: false,
+            activeRoleId: null,
+            activeRoleName: '',
+
+            async openUsersModal(roleId, roleName) {
+                this.activeRoleId = roleId;
+                this.activeRoleName = roleName;
+                this.isModalOpen = true;
+
+                const container = document.getElementById('role-users-modal-content');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="py-12 flex flex-col items-center justify-center gap-3">
+                            <div class="w-8 h-8 rounded-full border-2 border-brand-500 border-t-transparent animate-spin"></div>
+                            <span class="text-xs text-ink-soft font-medium">Role sahip kullanıcılar yükleniyor...</span>
+                        </div>
+                    `;
+
+                    try {
+                        const response = await fetch('/Role/GetRoleUsersComponent?roleName=' + encodeURIComponent(roleName));
+                        if (response.ok) {
+                            const html = await response.text();
+                            container.innerHTML = html;
+                        } else {
+                            container.innerHTML = `
+                                <div class="p-4 rounded-xl bg-bad/10 text-bad text-xs font-medium text-center">
+                                    Kullanıcılar yüklenirken bir sorun oluştu.
+                                </div>
+                            `;
+                        }
+                    } catch (e) {
+                        container.innerHTML = `
+                            <div class="p-4 rounded-xl bg-bad/10 text-bad text-xs font-medium text-center">
+                                Sunucuyla iletişim kurulurken bir sorun oluştu.
+                            </div>
+                        `;
+                    }
+                }
+            },
+
+            closeUsersModal() {
+                this.isModalOpen = false;
+            },
+
+            matchesRow(id, name, normalizedName) {
+                const q = this.searchQuery.toLowerCase().trim();
+                return !q || name.includes(q) || normalizedName.includes(q) || id.includes(q);
+            }
+        };
+    }
+
+    // ============ ROL SİL (AJAX) ============
+    async function deleteRole(id, roleName) {
+        if (!confirm(`"${roleName}" rolünü silmek istediğinizden emin misiniz? Bu role sahip kullanıcıların yetkileri etkilenebilir.`)) {
+            return;
+        }
+
+        const row = document.getElementById(`role-row-${id}`);
+        if (row) {
+            row.style.opacity = '0.4';
+            row.style.pointerEvents = 'none';
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('id', id);
+
+            const response = await fetch('/Role/DeleteRole', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            let result = {};
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                result = await response.json();
+            } else {
+                result = { success: response.ok, message: `"${roleName}" rolü başarıyla silindi.` };
+            }
+
+            if (result.success) {
+                if (row) {
+                    row.style.transition = 'all 0.4s ease';
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(20px)';
+                    setTimeout(() => {
+                        row.remove();
+                        const tbody = document.querySelector('tbody');
+                        if (tbody && tbody.querySelectorAll('tr[id^="role-row-"]').length === 0) {
+                            window.location.reload();
+                        }
+                    }, 400);
+                }
+
+                showNotification(result.message || 'Rol başarıyla silindi.', 'success');
+            } else {
+                if (row) {
+                    row.style.opacity = '1';
+                    row.style.pointerEvents = 'auto';
+                }
+                showNotification(result.message || 'Silme işlemi sırasında bir hata oluştu.', 'error');
+            }
+        } catch (error) {
+            if (row) {
+                row.style.opacity = '1';
+                row.style.pointerEvents = 'auto';
+            }
+            showNotification('Sunucuyla iletişim kurulurken bir hata oluştu.', 'error');
+        }
+    }
+
+    function showNotification(message, type = 'success') {
+        const isSuccess = type === 'success';
+        const toast = document.createElement('div');
+        toast.className = `fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium transition-all duration-300 transform translate-y-4 opacity-0 ${
+            isSuccess ? 'bg-card border-ok/30 text-ok' : 'bg-card border-bad/30 text-bad'
+        }`;
+        toast.innerHTML = `
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="${isSuccess ? 'M5 13l4 4L19 7' : 'M6 18L18 6M6 6l12 12'}" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>${message}</span>
+        `;
+        document.body.appendChild(toast);
+
+        requestAnimationFrame(() => {
+            toast.classList.remove('translate-y-4', 'opacity-0');
+        });
+
+        setTimeout(() => {
+            toast.classList.add('translate-y-4', 'opacity-0');
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+    }
+</script>

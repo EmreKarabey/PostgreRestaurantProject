@@ -1,0 +1,90 @@
+@model List<Application.Features.Reviews.Queries.GetActiveReviewsList.GetActiveReviewsListDto>
+
+@{
+    ViewData["Title"] = "Ürün Yorumları";
+    Layout = "_Layout";
+
+    var allReviews = Model.SelectMany(product => product.ActiveReviews).ToList();
+    var overallRating = allReviews.Count > 0 ? allReviews.Average(review => review.Score) : 0;
+    var overallRatingText = overallRating.ToString("0.0", System.Globalization.CultureInfo.GetCultureInfo("tr-TR"));
+}
+
+<section class="topSingleBkg topPageBkg">
+    <div class="item-content-bkg">
+        <div class="item-img" style="background-image:url('@Url.Content("~/image/restaurant2.jpg")');"></div>
+        <div class="inner-desc">
+            <h1 class="post-title single-post-title">Ürün Yorumları</h1>
+            <span class="post-subtitle">Misafirlerimizin favorilerine göz atın.</span>
+        </div>
+    </div>
+</section>
+
+<section class="reviews-page-content">
+    <div class="container">
+        @if (allReviews.Count > 0)
+        {
+            var overallFilledStars = (int)Math.Round(overallRating, MidpointRounding.AwayFromZero);
+            <div class="reviews-summary">
+                <div class="reviews-summary-score">@overallRatingText <span>/ 5</span></div>
+                <div>
+                    <div class="review-stars" aria-label="5 üzerinden @overallRatingText yıldız">@(new string('★', overallFilledStars))<span>@(new string('★', 5 - overallFilledStars))</span></div>
+                    <p>@allReviews.Count misafir değerlendirmesi</p>
+                </div>
+            </div>
+
+            <div class="reviews-list">
+                @foreach (var product in Model)
+                {
+                    var productAverage = product.ActiveReviews.Average(review => review.Score);
+                    var productRatingText = productAverage.ToString("0.0", System.Globalization.CultureInfo.GetCultureInfo("tr-TR"));
+                    var filledStars = (int)Math.Round(productAverage, MidpointRounding.AwayFromZero);
+                    var productImageUrl = string.IsNullOrWhiteSpace(product.ImageURL)
+                        ? Url.Content("~/dina-html/images/img-default.png")
+                        : $"/Image/Get?url={Uri.EscapeDataString(product.ImageURL)}&thumbnail=true";
+
+                    <article class="product-review-group">
+                        <header class="product-review-product">
+                            <img class="product-review-image" src="@productImageUrl" alt="@product.ProductName" loading="lazy" />
+                            <div class="product-review-product-info">
+                                <h2>@product.ProductName</h2>
+                                <div class="product-review-rating">
+                                    <span class="review-stars" aria-label="5 üzerinden @productRatingText yıldız">@(new string('★', filledStars))<span>@(new string('★', 5 - filledStars))</span></span>
+                                    <span class="product-review-score">@productRatingText <small>/ 5</small></span>
+                                    <span class="product-review-count">(@product.ActiveReviews.Count yorum)</span>
+                                </div>
+                            </div>
+                        </header>
+
+                        <div class="product-review-entries">
+                            @foreach (var review in product.ActiveReviews)
+                            {
+                                var reviewFilledStars = (int)Math.Round(review.Score, MidpointRounding.AwayFromZero);
+                                <div class="product-review-entry">
+                                    <div class="product-review-entry-meta">
+                                        <strong>@review.FirstName @review.LastName</strong>
+                                        <time>@review.CreatedAt.ToString("dd MMMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("tr-TR"))</time>
+                                    </div>
+                                    <div class="product-review-entry-rating" aria-label="5 üzerinden @review.Score yıldız">
+                                        <span class="review-stars">@(new string('★', reviewFilledStars))<span>@(new string('★', 5 - reviewFilledStars))</span></span>
+                                        <span class="product-review-score">@review.Score.ToString("0.0", System.Globalization.CultureInfo.GetCultureInfo("tr-TR")) <small>/ 5</small></span>
+                                    </div>
+                                    @if (!string.IsNullOrWhiteSpace(review.Comment))
+                                    {
+                                        <p class="product-review-comment">“@review.Comment”</p>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="reviews-empty-state">
+                <h2>Henüz yorum yok</h2>
+                <p>Ürünlerimize yapılan yorumlar burada görünecek.</p>
+            </div>
+        }
+    </div>
+</section>

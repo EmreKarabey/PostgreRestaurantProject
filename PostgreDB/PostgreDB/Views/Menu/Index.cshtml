@@ -1,0 +1,57 @@
+﻿
+@model List<GetActiveWithProductsListDto>
+
+@{
+    ViewData["Title"] = "Menu Page";
+    Layout = "_Layout";
+}
+
+<!-- TOP IMAGE HEADER -->
+<section class="topSingleBkg topPageBkg">
+    <div class="item-content-bkg">
+        <div class="item-img" style="background-image:url('@Url.Content("~/image/restaurant.jpg")');"></div>
+        <div class="inner-desc">
+            <h1 class="post-title single-post-title">Menü</h1>
+            <span class="post-subtitle"> Lezzetli tabaklarımızdan birinin tadını çıkarın.</span>
+        </div>
+    </div>
+</section>
+<!-- /TOP IMAGE HEADER -->
+<!-- MAIN WRAP CONTENT -->
+<section class="menu-1col-content">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+
+                @foreach (var item in Model)
+                {
+                    <div class="categ-name">
+                        <h2>@item.CategoryName</h2>
+                    </div>
+                    @foreach (var item2 in item.ProductListWithCategories)
+                    {
+                        <div class="menu-holder menu-1col">
+
+                            <div class="menu-post clearfix">
+                                <div class="menu-post-img"><a href="/Image/Get?url=@Uri.EscapeDataString(item2.ImageURL)" class="lightbox" title="@item2.ProductName" style="display:block;width:100%;height:100%;overflow:hidden;border-radius:inherit;line-height:0;"><img width="400" height="400" src="/Image/Get?url=@Uri.EscapeDataString(item2.ImageURL)&amp;thumbnail=true" class="menu-product-image" alt="@item2.ProductName" title="@item2.ProductName" loading="lazy" decoding="async" style="display:block;width:100%;height:100%;max-width:none;object-fit:cover;border:0;" /> </a> </div>
+                                <div class="menu-post-desc">
+                                    <h4><span class="menu-title">@item2.ProductName</span> <span class="menu-dots"></span><span class="menu-price">₺@item2.Price</span></h4>
+                                    <div class="menu-text"> @item2.Descrption</div>
+                                </div>
+                            </div>
+
+                        </div>
+                    }
+                  
+                }
+
+
+
+            </div>
+            <!--col-md-10-->
+        </div>
+        <!--row-->
+    </div>
+    <!--container-->
+</section>
+<!-- /MAIN WRAP CONTENT -->
