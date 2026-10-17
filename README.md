@@ -7,26 +7,32 @@ Postgre; kafe müşterilerinin menüyü inceleyip rezervasyon yapabildiği, işl
 ## 📸 Ekran Görüntüleri
 
 ### 👤 Kullanıcı Arayüzü
+<img width="1840" height="872" alt="image" src="https://github.com/user-attachments/assets/4a6cb5ae-9742-4267-ab83-ac7d78e7b8fd" />
 
-> Ekran görüntülerini `docs/images/` klasörüne ekleyip aşağıdaki görsel yollarını kullanın.
+<img width="1821" height="872" alt="image" src="https://github.com/user-attachments/assets/7be3e625-f0b2-42b2-bb4a-0ac5229158c6" />
 
-| Ana Sayfa | Menü |
-|---|---|
-| ![Kullanıcı ana sayfası](docs/images/user-home.png) | ![Menü sayfası](docs/images/user-menu.png) |
+<img width="1827" height="872" alt="image" src="https://github.com/user-attachments/assets/10da5655-95a9-4ac5-98f3-70e868ffcb49" />
 
-| Rezervasyon | Giriş / Kayıt |
-|---|---|
-| ![Rezervasyon sayfası](docs/images/user-reservation.png) | ![Giriş ve kayıt sayfası](docs/images/user-auth.png) |
+<img width="1830" height="876" alt="image" src="https://github.com/user-attachments/assets/9b47a595-32fc-435a-bd96-729107952f00" />
+
+<img width="1810" height="867" alt="image" src="https://github.com/user-attachments/assets/f464a98f-9dda-4a00-af86-43bf09cc23b3" />
+
+<img width="1810" height="868" alt="image" src="https://github.com/user-attachments/assets/bf6516c0-c528-4801-88c0-e91dcbb29973" />
+
+<img width="1817" height="876" alt="image" src="https://github.com/user-attachments/assets/09a426fe-d79f-4788-bbd1-711c1b1f1bf8" />
 
 ### 🛡️ Yönetici Paneli
+<img width="1818" height="876" alt="image" src="https://github.com/user-attachments/assets/670cbc35-8604-4d9f-9bca-0d49ee072b67" />
 
-| Yönetim Paneli | Ürün ve Kategori Yönetimi |
-|---|---|
-| ![Yönetim paneli](docs/images/admin-dashboard.png) | ![Ürün ve kategori yönetimi](docs/images/admin-products.png) |
+<img width="1830" height="872" alt="image" src="https://github.com/user-attachments/assets/64df1af7-fcb5-4574-8be2-5c55d28eb2ed" />
 
-| Rezervasyon Yönetimi | Masa ve QR Yönetimi |
-|---|---|
-| ![Rezervasyon yönetimi](docs/images/admin-reservations.png) | ![Masa ve QR yönetimi](docs/images/admin-tables-qr.png) |
+<img width="1825" height="875" alt="image" src="https://github.com/user-attachments/assets/4b8af046-969e-4480-8780-3d7f349e5e7b" />
+
+<img width="1831" height="872" alt="image" src="https://github.com/user-attachments/assets/a1c8cbed-f789-4000-a56a-71fb8f8f61b3" />
+
+<img width="1817" height="871" alt="image" src="https://github.com/user-attachments/assets/6e91ac37-4969-4bcd-a33f-2c99a004e274" />
+
+<img width="1848" height="866" alt="image" src="https://github.com/user-attachments/assets/92cca200-6626-4861-a722-7c231c5d9d51" />
 
 ---
 
@@ -156,7 +162,3 @@ Uygulamaların yerel adresleri ilgili `Properties/launchSettings.json` dosyalar�
 JWT anahtarları, veritabanı parolaları, SMTP bilgileri ve R2 anahtarları gizli tutulmalıdır. Üretim ortamında User Secrets yerine uygun bir secret yönetim çözümü ve HTTPS kullanın.
 
 ---
-
-## 📄 Lisans
-
-Bu depoda lisans dosyası bulunmuyor. Projeyi dağıtmadan veya yeniden kullanmadan önce lisans ekleyin.
